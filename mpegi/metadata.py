@@ -270,7 +270,7 @@ class Tag:
             | (stream[9] & 0x7F)
         )
         tag_body = self.stream.read(size)
-        # print(size)
+
         frames = {}
         idx = 0
 
@@ -281,7 +281,6 @@ class Tag:
 
             frame_id = frame_header[:4].decode("ascii")
             frame_size = int.from_bytes(frame_header[4:8], byteorder="big")
-            # print(frame_id, frame_size)
             if frame_size == 0:
                 idx += 10
                 continue
@@ -292,21 +291,17 @@ class Tag:
                 idx += 10 + frame_size
                 continue
 
-            # print(frame_id)
-
             frame_instance = Frames(frame_body, frame_id, frame_size, save_image=False)
 
+            print(frame_id)
             processed_frame = frame_instance.process_frame()
             if processed_frame is not None:
                 frames[frame_id] = processed_frame
-
-                # print(frames[frame_id])
-
-                metadata[frame_id] = frames[frame_id]
+                print(frames[frame_id])
+                # metadata[frame_id] = frames[frame_id]
             idx += 10 + frame_size
 
-        # print("Frame:", frames)
-        return metadata
+        # return metadata
 
 
 class Frames:
@@ -325,11 +320,11 @@ class Frames:
 
     If the frame has a valid id, a Tuple will be returned in the following format:
 
-        (ID, Information, Description, Frame Type)
+        (ID, Information, Description, Frame Type, Frame Size)
 
     For example, if ID == TIT2:
 
-        ("TIT2", "Kotov Syndrome", "The name of the piece", "TEXT_INFORMATION_FRAME")
+        ("TIT2", "Kotov Syndrome", "TIT2", "TEXT_INFORMATION_FRAME", 200091)
     """
 
     MAP = {
@@ -433,6 +428,7 @@ class Frames:
         return None
 
     def _encode(self):
+
         if self.encoding == 0:
             return "ISO-8859-1"
         elif self.encoding == 1:
@@ -443,17 +439,136 @@ class Frames:
             return "utf-8"
 
     def _comm(self):
-        return
+        encoding = self._encode()
+        try:
+            language = self.body[:3].decode(encoding)
+        except:
+            try:
+                language = self.body[:3].decode("utf-8")
+            except:
+                language = None
+
+        description, null_sep, text = self.body[3:].partition(b"\x00")
+
+        try:
+            description = description.decode(encoding)
+        except:
+            description = None
+
+        ftext = text.strip().decode(encoding, "ignore")
+        ftext = "".join([char if 32 <= ord(char) <= 126 else " " for char in ftext])
+        return {
+            "ID": "COMM",
+            "Language": language,
+            "Description": description,
+            "Text": ftext,
+            "Contains": "Comments",
+            "Part of": self.MAP["COMM"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tit1(self):
+        encoding = self._encode()
+        return {
+            "ID": "TIT1",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Content Group Description",
+            "Part of": self.MAP["TIT1"][0],
+            "Frame Size": self.size,
+        }
 
     def _tit2(self):
         encoding = self._encode()
-        return (
-            "TIT2",
-            self.body.decode(encoding, "ignore"),
-            "Title",
-            self.MAP["TIT2"][0],
-            {"Frame Size": self.size},
-        )
+        return {
+            "ID": "TIT2",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Title/Songname/Content",
+            "Part of": self.MAP["TIT2"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tit3(self):
+        encoding = self._encode()
+        return {
+            "ID": "TIT3",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Subtitle/Description",
+            "Part of": self.MAP["TIT3"][0],
+            "Frame Size": self.size,
+        }
+
+    def _talb(self):
+        encoding = self._encode()
+        return {
+            "ID": "TALB",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Album/Movie/Show",
+            "Part of": self.MAP["TALB"][0],
+            "Frame Size": self.size,
+        }
+
+    def _toal(self):
+        encoding = self._encode()
+        return {
+            "ID": "TOAL",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Original Album/Movie/Show",
+            "Part of": self.MAP["TOAL"][0],
+            "Frame Size": self.size,
+        }
+
+    def _trck(self):
+        encoding = self._encode()
+        return {
+            "ID": "TRCK",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Track Number/Position",
+            "Part of": self.MAP["TRCK"][0],
+            "Frame Size": self.size,
+        }
+
+    def _TPOS(self):
+        encoding = self._encode()
+        return {
+            "ID": "TPOS",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Part of a Set",
+            "Part of": self.MAP["TPOS"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tsst(self):
+        encoding = self._encode()
+        return {
+            "ID": "TSST",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Set Subtitle",
+            "Part of": self.MAP["TSST"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tsrc(self):
+        encoding = self._encode()
+        return {
+            "ID": "TSRC",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "International Standard Recording Code [ISRC]",
+            "Part of": self.MAP["TSRC"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tpe1(self):
+        encoding = self._encode()
+        return {
+            "ID": "TPE1",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Artist/Performer/Soloist/Group",
+            "Part of": self.MAP["TPE1"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tpe2(self):
+        return
 
     def _apic(self):
         encoding = self._encode()
@@ -480,25 +595,28 @@ class Frames:
                     file.write(picture_data)
                     print(f"Image saved to {description}.png")
 
-        return (
-            "APIC",
-            {
-                "MIME Type": mime_type,
-                "Picture Type": PICTURE_TYPE[picture_type],
-                "Description": description,
-                "Picture Data Length": len(picture_data),
-                "Total Frame Size": self.size,
-                "Image Saved": self.save_image,
-            },
-            "Attached Picture",
-            self.MAP["APIC"][0],
-        )
+        return {
+            "ID": "APIC",
+            "MIME Type": mime_type,
+            "Picture Type": PICTURE_TYPE[picture_type],
+            "Description": description,
+            "Picture Data Length": len(picture_data),
+            "Image Saved": self.save_image,
+            "Contains": "Attached Picture",
+            "Part of": self.MAP["APIC"][0],
+            "Frame Size": self.size,
+        }
 
 
 if __name__ == "__main__":
-    audio = Path("kotov.mp3")
-    info = Info(audio)
-    print(info)
-    with Tag(Path(audio)) as tag:
+    audio1 = Path("kotov.mp3")
+    audio2 = Path("imagematerial.mp3")
+    # info = Info(audio)
+    # print(info)
+    with Tag(Path(audio1)) as tag:
         print("\n", tag._content_v2())
+
+    with Tag(Path(audio2)) as tag:
+        print("\n", tag._content_v2())
+
     # print(info.to_dict())
