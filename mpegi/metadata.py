@@ -292,78 +292,209 @@ class Tag:
                 idx += 10 + frame_size
                 continue
 
-            print(frame_id)
-            if frame_id == "APIC":
-                print("APIC frame found")
+            # print(frame_id)
 
-                # Extract text encoding
-                encoding_byte = frame_body[0]
-                frame_body = frame_body[1:]
+            frame_instance = Frames(frame_body, frame_id, frame_size, save_image=False)
 
-                if encoding_byte == 0:  # $00
-                    encoding = "ISO-8859-1"
-                elif encoding_byte == 1:  # $00 00 BOM
-                    encoding = "utf-16"
-                elif encoding_byte == 2:  # $00 00
-                    encoding = "utf-16-be"
-                else:  # $00
-                    encoding = "utf-8"
+            processed_frame = frame_instance.process_frame()
+            if processed_frame is not None:
+                frames[frame_id] = processed_frame
 
-                # Extract MIME type
-                mime_type, null_sep, frame_body = frame_body.partition(b"\x00")
-                mime_type = mime_type.decode("utf-8")
-                metadata["APIC MIME Type"] = mime_type
-                # print("MIME Type:", mime_type)
+                # print(frames[frame_id])
 
-                # Extract picture type
-                picture_type = frame_body[0]
-                frame_body = frame_body[1:]
-                metadata["APIC Picture Type"] = PICTURE_TYPE[picture_type]
-                # print("Picture Type:", picture_type)
-
-                # Extract description
-                description, null_sep, frame_body = frame_body.partition(b"\x00")
-                description = description.decode(encoding)
-                metadata["APIC Description"] = description
-                # print("Description:", description)
-
-                # The rest is picture data
-                picture_data = frame_body
-                # print("Picture Data Length:", len(picture_data))
-                # print("Total APIC Frame Size:", frame_size)
-
-                if picture_type != 2:
-                    with open(f"{description}.jpg", "wb") as file:
-                        file.write(picture_data)
-                        print(f"Image saved to {description}.jpg")
-
-                else:
-                    with open(f"{description}.png", "wb") as file:
-                        file.write(picture_data)
-                        print(f"Image saved to {description}.png")
-
-                break
-            # ID3v2 frame overview 4.0
-            encoding_byte = frame_body[0]
-            frame_body = frame_body[1:]
-
-            if encoding_byte == 0:  # $00
-                encoding = "ISO-8859-1"
-            elif encoding_byte == 1:  # $00 00 BOM
-                encoding = "utf-16"
-            elif encoding_byte == 2:  # $00 00
-                encoding = "utf-16-be"
-            else:  # $00
-                encoding = "utf-8"
-
-            frames[frame_id] = frame_body.decode(encoding, "ignore")
+                metadata[frame_id] = frames[frame_id]
             idx += 10 + frame_size
 
-        print("Frame:", frames)
-        # return metadata
+        # print("Frame:", frames)
+        return metadata
 
 
-# class FrameID
+class Frames:
+    """
+    Class to handle frames and their decoding.
+
+    Each frame is used for storing one piece of information, such as Artist or Album.
+    A frame consists of a header and body.
+
+    Header (10 Bytes):
+
+    Bytes    Content
+    0-3      Frame identifier
+    4-7      Size
+    8-9      Flags
+
+    If the frame has a valid id, a Tuple will be returned in the following format:
+
+        (ID, Information, Description, Frame Type)
+
+    For example, if ID == TIT2:
+
+        ("TIT2", "Kotov Syndrome", "The name of the piece", "TEXT_INFORMATION_FRAME")
+    """
+
+    MAP = {
+        "COMM": ("COMMENTS", "_comm"),
+        "TIT1": ("TEXT_INFORMATION_FRAMES", "_tit1"),
+        "TIT2": ("TEXT_INFORMATION_FRAMES", "_tit2"),
+        "TIT3": ("TEXT_INFORMATION_FRAMES", "_tit3"),
+        "TALB": ("TEXT_INFORMATION_FRAMES", "_talb"),
+        "TOAL": ("TEXT_INFORMATION_FRAMES", "_toal"),
+        "TRCK": ("TEXT_INFORMATION_FRAMES", "_trck"),
+        "TPOS": ("TEXT_INFORMATION_FRAMES", "_tpos"),
+        "TSST": ("TEXT_INFORMATION_FRAMES", "_tsst"),
+        "TSRC": ("TEXT_INFORMATION_FRAMES", "_tsrc"),
+        "TPE1": ("INVOLVED_PERSONS_FRAMES", "_tpe1"),
+        "TPE2": ("INVOLVED_PERSONS_FRAMES", "_tpe2"),
+        "TPE3": ("INVOLVED_PERSONS_FRAMES", "_tpe3"),
+        "TPE4": ("INVOLVED_PERSONS_FRAMES", "_tpe4"),
+        "TOPE": ("INVOLVED_PERSONS_FRAMES", "_tope"),
+        "TEXT": ("INVOLVED_PERSONS_FRAMES", "_text"),
+        "TOLY": ("INVOLVED_PERSONS_FRAMES", "_toly"),
+        "TCOM": ("INVOLVED_PERSONS_FRAMES", "_tcom"),
+        "TMCL": ("INVOLVED_PERSONS_FRAMES", "_tmcl"),
+        "TIPL": ("INVOLVED_PERSONS_FRAMES", "_tipl"),
+        "TENC": ("INVOLVED_PERSONS_FRAMES", "_tenc"),
+        "TBPM": ("DERIVED_SUBJECTIVE_PROPERTIES_FRAMES", "_tbpm"),
+        "TLEN": ("DERIVED_SUBJECTIVE_PROPERTIES_FRAMES", "_tlen"),
+        "TKEY": ("DERIVED_SUBJECTIVE_PROPERTIES_FRAMES", "_tkey"),
+        "TLAN": ("DERIVED_SUBJECTIVE_PROPERTIES_FRAMES", "_tlan"),
+        "TCON": ("DERIVED_SUBJECTIVE_PROPERTIES_FRAMES", "_tcon"),
+        "TFLT": ("DERIVED_SUBJECTIVE_PROPERTIES_FRAMES", "_tflt"),
+        "TMED": ("DERIVED_SUBJECTIVE_PROPERTIES_FRAMES", "_tmed"),
+        "TMOO": ("DERIVED_SUBJECTIVE_PROPERTIES_FRAMES", "_tmoo"),
+        "TCOP": ("RIGHTS_LICENSE_FRAMES", "_tcop"),
+        "TPRO": ("RIGHTS_LICENSE_FRAMES", "_tpro"),
+        "TPUB": ("RIGHTS_LICENSE_FRAMES", "_tpub"),
+        "TOWN": ("RIGHTS_LICENSE_FRAMES", "_town"),
+        "TRSN": ("RIGHTS_LICENSE_FRAMES", "_trsn"),
+        "TRSO": ("RIGHTS_LICENSE_FRAMES", "_trso"),
+        "TOFN": ("OTHER_TEXT_FRAMES", "_tofn"),
+        "TDLY": ("OTHER_TEXT_FRAMES", "_tdly"),
+        "TDEN": ("OTHER_TEXT_FRAMES", "_tden"),
+        "TDOR": ("OTHER_TEXT_FRAMES", "_tdor"),
+        "TDRC": ("OTHER_TEXT_FRAMES", "_tdrc"),
+        "TDRL": ("OTHER_TEXT_FRAMES", "_tdrl"),
+        "TDTG": ("OTHER_TEXT_FRAMES", "_tdtg"),
+        "TSSE": ("OTHER_TEXT_FRAMES", "_tsse"),
+        "TSOA": ("OTHER_TEXT_FRAMES", "_tsoa"),
+        "TSOP": ("OTHER_TEXT_FRAMES", "_tsop"),
+        "TSOT": ("OTHER_TEXT_FRAMES", "_tsot"),
+        "TXXX": ("USER_DEFINED_INFORMATION_FRAME", "_txxx"),
+        "WCOM": ("URL_LINK_FRAMES", "_wcom"),
+        "WCOP": ("URL_LINK_FRAMES", "_wcop"),
+        "WOAF": ("URL_LINK_FRAMES", "_woaf"),
+        "WOAR": ("URL_LINK_FRAMES", "_woar"),
+        "WOAS": ("URL_LINK_FRAMES", "_woas"),
+        "WORS": ("URL_LINK_FRAMES", "_wors"),
+        "WPAY": ("URL_LINK_FRAMES", "_wpay"),
+        "WPUB": ("URL_LINK_FRAMES", "_wpub"),
+        "WXXX": ("USER_DEFINED_URL_FRAME", "_wxxx"),
+        "MCDI": ("MUSIC_CD_IDENTIFIER", "_mcdi"),
+        "ETCO": ("EVENT_TIMING_CODES", "_etco"),
+        "MLLT": ("MPEG_LOCATION_LOOKUP_TABLE", "_mllt"),
+        "SYTC": ("SYNCHRONISED_TEMPO_CODES", "_sytc"),
+        "USLT": ("UNSYNCRHONISED_LYRICS_TEXT_TRANSCRIPTION", "_uslt"),
+        "SYLT": ("SYNCHRONIZED_LYRICS_TEXT_TRANSCRIPTION", "_sylt"),
+        "RVA2": ("RELATIVE_VOLUME_ADJUSTMENT", "_rva2"),
+        "EQU2": ("EQUALISATION", "_equ2"),
+        "RVRB": ("REVERB", "_rvrb"),
+        "APIC": ("ATTACHED_PICTURE", "_apic"),
+        "GEOB": ("GENERAL_ENCAPSULATED_OBJECT", "_geob"),
+        "PCNT": ("PLAY_COUNTER", "_pcnt"),
+        "POPM": ("POPULARIMETER", "_popm"),
+        "RBUF": ("RECOMMENDED_BUFFER_SIZE", "_rbuf"),
+        "AENC": ("AUDIO_ENCRYPTION", "_aenc"),
+        "LINK": ("LINKED_INFORMATION", "_link"),
+        "POSS": ("POSITION_SYNCHRONIZATION_FRAME", "_poss"),
+        "USER": ("TERMS_OF_USE_FRAME", "_user"),
+        "OWNE": ("OWNERSHIP_FRAME", "_owne"),
+        "COMR": ("COMMERCIAL_FRAME", "_comr"),
+        "ENCR": ("ENCYRPTION_METHOD_REGISTRATION", "_encr"),
+        "GRID": ("GROUP_IDENTIFICATION_REGISTRATION", "_grid"),
+        "PRIV": ("PRIVATE_FRAME", "_priv"),
+        "SIGN": ("SIGNATURE_FRAME", "_sign"),
+        "SEEK": ("SEEK_FRAME", "_seek"),
+        "ASPI": ("AUDIO_SEEK_POINT_INDEX", "_aspi"),
+    }
+
+    def __init__(self, body, id, size, save_image: bool = False):
+        self.encoding = body[0]
+        self.body = body[1:]
+        self.id = id
+        self.size = size
+        self.save_image = save_image
+
+    def process_frame(self):
+        if self.id in self.MAP:
+            c, m = self.MAP[self.id]
+            if hasattr(self, m):
+                frmethod = getattr(self, m)
+                return frmethod()
+        return None
+
+    def _encode(self):
+        if self.encoding == 0:
+            return "ISO-8859-1"
+        elif self.encoding == 1:
+            return "utf-16"
+        elif self.encoding == 2:
+            return "utf-16-be"
+        else:
+            return "utf-8"
+
+    def _comm(self):
+        return
+
+    def _tit2(self):
+        encoding = self._encode()
+        return (
+            "TIT2",
+            self.body.decode(encoding, "ignore"),
+            "Title",
+            self.MAP["TIT2"][0],
+            {"Frame Size": self.size},
+        )
+
+    def _apic(self):
+        encoding = self._encode()
+
+        mime_type, null_sep, frame_body = self.body.partition(b"\x00")
+        mime_type = mime_type.decode("utf-8")
+
+        picture_type = frame_body[0]
+        frame_body = frame_body[1:]
+
+        description, null_sep, frame_body = frame_body.partition(b"\x00")
+        description = description.decode(encoding)
+
+        picture_data = frame_body
+
+        if self.save_image:
+            if picture_type != 2:
+                with open(f"{description}.jpg", "wb") as file:
+                    file.write(picture_data)
+                    print(f"Image saved to {description}.jpg")
+
+            else:
+                with open(f"{description}.png", "wb") as file:
+                    file.write(picture_data)
+                    print(f"Image saved to {description}.png")
+
+        return (
+            "APIC",
+            {
+                "MIME Type": mime_type,
+                "Picture Type": PICTURE_TYPE[picture_type],
+                "Description": description,
+                "Picture Data Length": len(picture_data),
+                "Total Frame Size": self.size,
+                "Image Saved": self.save_image,
+            },
+            "Attached Picture",
+            self.MAP["APIC"][0],
+        )
+
+
 if __name__ == "__main__":
     audio = Path("kotov.mp3")
     info = Info(audio)
