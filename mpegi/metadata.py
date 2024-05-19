@@ -199,7 +199,7 @@ class Tag:
         tag = self.stream.read(3)
         if tag == self.TAGV2:
             self.stream.seek(-3, 1)
-            return self.stream.read(128)
+            return self.stream.read(10)
 
     def _content_v2(self):
         try:
@@ -265,6 +265,7 @@ class Tag:
 
         while idx < len(stream):
             frame_header = stream[idx : idx + 10]
+            print(frame_header)
             frame_id = frame_header[:4].decode("ascii")
             frame_size = int.from_bytes(frame_header[4:8], byteorder="big")
             # frame_flags = frame_header[8:10]
@@ -282,7 +283,7 @@ class Tag:
             else:
                 encoding = "utf-8"
 
-            frames[frame_id] = frame_body.decode(encoding, errors="replace")
+            frames[frame_id] = frame_body.decode(encoding, "ignore")
             idx += 10 + frame_size
 
         print(frames)
