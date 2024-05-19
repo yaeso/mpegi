@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import BinaryIO
 
 from genres import GENRES
+from ptypes import PICTURE_TYPE
 
 
 class Info:
@@ -163,8 +164,9 @@ class Tag:
             header = self._v1()
             if header is None:
                 raise Exception("MP3 does not contain a TAGv1 space.")
+
         except Exception as e:
-            print(e)
+            return e
 
         metadata = {}
         metadata["Identifier"] = header[:3]
@@ -207,7 +209,7 @@ class Tag:
             if stream is None:
                 raise Exception("MP3 does not contain a TAGv2 space.")
         except Exception as e:
-            print(e)
+            return e
 
         metadata = {}
 
@@ -260,41 +262,112 @@ class Tag:
 
         metadata["Other Flags"] = "CLEARED"
 
+        tag_size_bytes = stream[6:10]
+        size = (
+            (stream[6] & 0x7F) << 21
+            | (stream[7] & 0x7F) << 14
+            | (stream[8] & 0x7F) << 7
+            | (stream[9] & 0x7F)
+        )
+        tag_body = self.stream.read(size)
+        # print(size)
         frames = {}
-        idx = 10
+        idx = 0
 
-        while idx < len(stream):
-            frame_header = stream[idx : idx + 10]
-            print(frame_header)
+        while idx < len(tag_body):
+            frame_header = tag_body[idx : idx + 10]
+            if len(frame_header) < 10:
+                break
+
             frame_id = frame_header[:4].decode("ascii")
             frame_size = int.from_bytes(frame_header[4:8], byteorder="big")
-            # frame_flags = frame_header[8:10]
+            # print(frame_id, frame_size)
+            if frame_size == 0:
+                idx += 10
+                continue
 
-            frame_body = stream[idx + 10 : idx + 10 + frame_size]
+            frame_body = tag_body[idx + 10 : idx + 10 + frame_size]
+
+            if not frame_body:
+                idx += 10 + frame_size
+                continue
+
+            print(frame_id)
+            if frame_id == "APIC":
+                print("APIC frame found")
+
+                # Extract text encoding
+                encoding_byte = frame_body[0]
+                frame_body = frame_body[1:]
+
+                if encoding_byte == 0:  # $00
+                    encoding = "ISO-8859-1"
+                elif encoding_byte == 1:  # $00 00 BOM
+                    encoding = "utf-16"
+                elif encoding_byte == 2:  # $00 00
+                    encoding = "utf-16-be"
+                else:  # $00
+                    encoding = "utf-8"
+
+                # Extract MIME type
+                mime_type, null_sep, frame_body = frame_body.partition(b"\x00")
+                mime_type = mime_type.decode("utf-8")
+                metadata["APIC MIME Type"] = mime_type
+                # print("MIME Type:", mime_type)
+
+                # Extract picture type
+                picture_type = frame_body[0]
+                frame_body = frame_body[1:]
+                metadata["APIC Picture Type"] = PICTURE_TYPE[picture_type]
+                # print("Picture Type:", picture_type)
+
+                # Extract description
+                description, null_sep, frame_body = frame_body.partition(b"\x00")
+                description = description.decode(encoding)
+                metadata["APIC Description"] = description
+                # print("Description:", description)
+
+                # The rest is picture data
+                picture_data = frame_body
+                # print("Picture Data Length:", len(picture_data))
+                # print("Total APIC Frame Size:", frame_size)
+
+                if picture_type != 2:
+                    with open(f"{description}.jpg", "wb") as file:
+                        file.write(picture_data)
+                        print(f"Image saved to {description}.jpg")
+
+                else:
+                    with open(f"{description}.png", "wb") as file:
+                        file.write(picture_data)
+                        print(f"Image saved to {description}.png")
+
+                break
+            # ID3v2 frame overview 4.0
             encoding_byte = frame_body[0]
             frame_body = frame_body[1:]
 
-            if encoding_byte == 0:
+            if encoding_byte == 0:  # $00
                 encoding = "ISO-8859-1"
-            elif encoding_byte == 1:
+            elif encoding_byte == 1:  # $00 00 BOM
                 encoding = "utf-16"
-            elif encoding_byte == 2:
+            elif encoding_byte == 2:  # $00 00
                 encoding = "utf-16-be"
-            else:
+            else:  # $00
                 encoding = "utf-8"
 
             frames[frame_id] = frame_body.decode(encoding, "ignore")
             idx += 10 + frame_size
 
-        print(frames)
+        print("Frame:", frames)
+        # return metadata
 
-        return metadata
 
-
+# class FrameID
 if __name__ == "__main__":
     audio = Path("kotov.mp3")
     info = Info(audio)
     print(info)
     with Tag(Path(audio)) as tag:
-        print(tag._content_v2())
+        print("\n", tag._content_v2())
     # print(info.to_dict())
