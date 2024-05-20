@@ -5,6 +5,7 @@ from typing import BinaryIO
 
 from genres import GENRES
 from ptypes import PICTURE_TYPE
+from utils import rm_unsync
 
 
 class Info:
@@ -271,6 +272,9 @@ class Tag:
         )
         tag_body = self.stream.read(size)
 
+        if bool(unsynchronisation):
+            tag_body = rm_unsync(tag_body)
+
         frames = {}
         idx = 0
 
@@ -295,7 +299,6 @@ class Tag:
                 frame_body,
                 frame_id,
                 frame_size,
-                unsync=bool(unsynchronisation),
                 save_image=False,
             )
 
@@ -419,12 +422,7 @@ class Frames:
         "ASPI": ("AUDIO_SEEK_POINT_INDEX", "_aspi"),
     }
 
-    def __init__(self, body, id, size, unsync=False, save_image: bool = False):
-        # Account for unsynchronisation
-        self.unsync = unsync
-        if self.unsync:
-            body = self._rm_unsync(body)
-
+    def __init__(self, body, id, size, save_image: bool = False):
         self.body = body[1:]
         self.encoding = body[0]
         self.id = id
@@ -438,9 +436,6 @@ class Frames:
                 frmethod = getattr(self, m)
                 return frmethod()
         return None
-
-    def _rm_unsync(self, body):
-        return body.replace(b"\xFF\x00", b"\xFF")
 
     def _encode(self):
         if self.encoding == 0:

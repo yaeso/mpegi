@@ -23,3 +23,7 @@ def check_signature(audio: Path) -> bool:
         signature = stream.read(3)
 
     return any(signature in s for s in VALID_ISO)
+
+
+def rm_unsync(body):
+    return body.replace(b"\xFF\x00", b"\xFF")
