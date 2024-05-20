@@ -26,4 +26,19 @@ def check_signature(audio: Path) -> bool:
 
 
 def rm_unsync(body: bytes) -> bytes:
+    """
+    Removes unsynchronization bytes from the given byte sequence.
+
+    Unsynchronization is a process in ID3v2 tags to prevent false
+    synchronization by adding a zero byte after every 0xFF byte. This
+    function reverses that process by removing those zero bytes.
+
+    See: https://id3.org/id3v2.4.0-structure -- 6.1
+
+    Args:
+        body (bytes): The byte sequence from which to remove unsynchronization bytes.
+
+    Returns:
+        bytes: The byte sequence with unsynchronization bytes removed.
+    """
     return body.replace(b"\xFF\x00", b"\xFF")
