@@ -453,7 +453,7 @@ class Frames:
         encoding = self._encode()
 
         try:
-            language = self.body[:3].decode("ISO-8859-1")
+            language = self.body[:3].decode("ISO-8859-1").replace("\x00", "")
         except Exception as e:
             language = None
             print(f"Error decoding language: {e}")
@@ -468,7 +468,9 @@ class Frames:
 
         try:
             ftext = text.strip(b"\x00").decode(encoding, "ignore")
-            ftext = "".join([char if 32 <= ord(char) <= 126 else " " for char in ftext])
+            ftext = "".join(
+                [char if 32 <= ord(char) <= 126 else char for char in ftext]
+            )
         except Exception as e:
             ftext = None
             print(f"Error decoding text: {e}")
@@ -487,7 +489,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TIT1",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Content Group Description",
             "Part of": self.MAP["TIT1"][0],
             "Frame Size": self.size,
@@ -497,7 +499,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TIT2",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Title/Songname/Content",
             "Part of": self.MAP["TIT2"][0],
             "Frame Size": self.size,
@@ -507,7 +509,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TIT3",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Subtitle/Description",
             "Part of": self.MAP["TIT3"][0],
             "Frame Size": self.size,
@@ -517,7 +519,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TALB",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Album/Movie/Show",
             "Part of": self.MAP["TALB"][0],
             "Frame Size": self.size,
@@ -527,7 +529,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TOAL",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Original Album/Movie/Show",
             "Part of": self.MAP["TOAL"][0],
             "Frame Size": self.size,
@@ -537,7 +539,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TRCK",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Track Number/Position",
             "Part of": self.MAP["TRCK"][0],
             "Frame Size": self.size,
@@ -547,7 +549,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TPOS",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Part of a Set",
             "Part of": self.MAP["TPOS"][0],
             "Frame Size": self.size,
@@ -557,7 +559,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TSST",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Set Subtitle",
             "Part of": self.MAP["TSST"][0],
             "Frame Size": self.size,
@@ -567,7 +569,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TSRC",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "International Standard Recording Code [ISRC]",
             "Part of": self.MAP["TSRC"][0],
             "Frame Size": self.size,
@@ -577,7 +579,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TPE1",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Artist/Performer/Soloist/Group",
             "Part of": self.MAP["TPE1"][0],
             "Frame Size": self.size,
@@ -587,7 +589,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TPE2",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Band/Orchestra/Accompaniment",
             "Part of": self.MAP["TPE2"][0],
             "Frame Size": self.size,
@@ -597,7 +599,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TPE3",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Conductor",
             "Part of": self.MAP["TPE3"][0],
             "Frame Size": self.size,
@@ -607,7 +609,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TPE4",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Interpreted/Remixed/Modified by",
             "Part of": self.MAP["TPE4"][0],
             "Frame Size": self.size,
@@ -617,7 +619,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TOPE",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Original Artist/Performer",
             "Part of": self.MAP["TOPE"][0],
             "Frame Size": self.size,
@@ -627,7 +629,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TEXT",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Lyricist",
             "Part of": self.MAP["TEXT"][0],
             "Frame Size": self.size,
@@ -637,7 +639,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TOLY",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Original Lyricist",
             "Part of": self.MAP["TOLY"][0],
             "Frame Size": self.size,
@@ -647,7 +649,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TCOM",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Composer",
             "Part of": self.MAP["TCOM"][0],
             "Frame Size": self.size,
@@ -660,7 +662,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TMCL",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Musician Credits",
             "Part of": self.MAP["TMCL"][0],
             "Frame Size": self.size,
@@ -670,7 +672,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TIPL",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Involved People List",
             "Part of": self.MAP["TIPL"][0],
             "Frame Size": self.size,
@@ -680,7 +682,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TENC",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Encoded by",
             "Part of": self.MAP["TENC"][0],
             "Frame Size": self.size,
@@ -690,7 +692,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TBPM",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "BPM",
             "Part of": self.MAP["TBPM"][0],
             "Frame Size": self.size,
@@ -700,7 +702,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TLEN",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Length of Audio File in Milliseconds",
             "Part of": self.MAP["TLEN"][0],
             "Frame Size": self.size,
@@ -710,7 +712,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TKEY",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Initial Key",
             "Part of": self.MAP["TKEY"][0],
             "Frame Size": self.size,
@@ -720,7 +722,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TLAN",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Language",
             "Part of": self.MAP["TLAN"][0],
             "Frame Size": self.size,
@@ -736,7 +738,7 @@ class Frames:
 
         return {
             "ID": "TCON",
-            "Information": genre,
+            "Information": genre.replace("\x00", ""),
             "Contains": "Content Type (Genre)",
             "Part of": self.MAP["TCON"][0],
             "Frame Size": self.size,
@@ -778,7 +780,7 @@ class Frames:
         # https://mutagen-specs.readthedocs.io/en/latest/id3/id3v2.4.0-frames.html#tmed
         return {
             "ID": "TMED",
-            "Information": media_type,
+            "Information": media_type.replace("\x00", ""),
             "Contains": "Media Type",
             "Part of": self.MAP["TMED"][0],
             "Frame Size": self.size,
@@ -788,7 +790,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TMOO",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Mood",
             "Part of": self.MAP["TMOO"][0],
             "Frame Size": self.size,
@@ -798,7 +800,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TCOP",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Copyright Message",
             "Part of": self.MAP["TCOP"][0],
             "Frame Size": self.size,
@@ -808,7 +810,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TPRO",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Produced Notice",
             "Part of": self.MAP["TPRO"][0],
             "Frame Size": self.size,
@@ -818,7 +820,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TPUB",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Publisher",
             "Part of": self.MAP["TPUB"][0],
             "Frame Size": self.size,
@@ -828,7 +830,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TOWN",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "File owner/Licensee",
             "Part of": self.MAP["TOWN"][0],
             "Frame Size": self.size,
@@ -838,7 +840,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TRSN",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Internet Radio Station Name",
             "Part of": self.MAP["TRSN"][0],
             "Frame Size": self.size,
@@ -848,7 +850,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TRSO",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Internet Radio Station Owner",
             "Part of": self.MAP["TRSO"][0],
             "Frame Size": self.size,
@@ -858,7 +860,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TFON",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Original Filename",
             "Part of": self.MAP["TFON"][0],
             "Frame Size": self.size,
@@ -868,7 +870,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TDLY",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Playlist Delay in Milliseconds",
             "Part of": self.MAP["TDLY"][0],
             "Frame Size": self.size,
@@ -878,7 +880,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TDEN",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Encoding Time",
             "Part of": self.MAP["TDEN"][0],
             "Frame Size": self.size,
@@ -888,7 +890,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TDOR",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Original Release Time",
             "Part of": self.MAP["TDOR"][0],
             "Frame Size": self.size,
@@ -898,7 +900,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TDRC",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Recording Time",
             "Part of": self.MAP["TDRC"][0],
             "Frame Size": self.size,
@@ -909,7 +911,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TYER",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Recording Time",
             "Part of": self.MAP["TYER"][0],
             "Frame Size": self.size,
@@ -919,7 +921,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TDRL",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Release Time",
             "Part of": self.MAP["TDRL"][0],
             "Frame Size": self.size,
@@ -929,7 +931,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TDTG",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Tagging Time",
             "Part of": self.MAP["TDTG"][0],
             "Frame Size": self.size,
@@ -939,7 +941,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TSSE",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Software/Hardware & Settings Used for Encoding",
             "Part of": self.MAP["TSSE"][0],
             "Frame Size": self.size,
@@ -949,7 +951,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TSOA",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Album Sort Order",
             "Part of": self.MAP["TSOA"][0],
             "Frame Size": self.size,
@@ -959,7 +961,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TSOP",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Performer Sort Order",
             "Part of": self.MAP["TSOP"][0],
             "Frame Size": self.size,
@@ -969,7 +971,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TSOT",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Title Sort Order",
             "Part of": self.MAP["TSOT"][0],
             "Frame Size": self.size,
@@ -993,7 +995,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "WCOM",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Commerical Information",
             "Part of": self.MAP["WCOM"][0],
             "Frame Size": self.size,
@@ -1003,7 +1005,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "WCOP",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Copyright/Legal Information",
             "Part of": self.MAP["WCOP"][0],
             "Frame Size": self.size,
@@ -1013,7 +1015,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "WOAF",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Official Audio File Webpage",
             "Part of": self.MAP["WOAF"][0],
             "Frame Size": self.size,
@@ -1023,7 +1025,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "WOAR",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Official Artist/Performer Webpage",
             "Part of": self.MAP["WOAR"][0],
             "Frame Size": self.size,
@@ -1033,7 +1035,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "WOAS",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Official Audio Source Webpage",
             "Part of": self.MAP["WOAS"][0],
             "Frame Size": self.size,
@@ -1043,7 +1045,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "WORS",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Official Internet Radio Station Homepage",
             "Part of": self.MAP["WORS"][0],
             "Frame Size": self.size,
@@ -1053,7 +1055,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "WPAY",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Payment",
             "Part of": self.MAP["WPAY"][0],
             "Frame Size": self.size,
@@ -1063,7 +1065,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "WPUB",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "Publishers Official Webpage",
             "Part of": self.MAP["WPUB"][0],
             "Frame Size": self.size,
@@ -1091,11 +1093,15 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "MCDI",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "CD Identifier",
             "Part of": self.MAP["MCDI"][0],
             "Frame Size": self.size,
         }
+
+    def _etoc(self):
+        # not gonna attempt until an mp3 with it is found
+        return
 
     def _apic(self):
         encoding = self._encode()
