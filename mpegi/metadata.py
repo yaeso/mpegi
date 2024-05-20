@@ -247,7 +247,7 @@ class Tag:
         # idx = 6
         if extended_header == 1:
             # Maybe add extended_header info support in the future:
-            return self._clean_v2(metadata)
+            return "Extended Header"  # self._clean_v2(metadata)
 
         # Check if other flags are cleared
         sequences = (0b00001000, 0b00000100, 0b00000010, 0b00000001)
@@ -291,7 +291,13 @@ class Tag:
                 idx += 10 + frame_size
                 continue
 
-            frame_instance = Frames(frame_body, frame_id, frame_size, save_image=False)
+            frame_instance = Frames(
+                frame_body,
+                frame_id,
+                frame_size,
+                unsync=bool(unsynchronisation),
+                save_image=False,
+            )
 
             print(frame_id)
             processed_frame = frame_instance.process_frame()
@@ -413,9 +419,14 @@ class Frames:
         "ASPI": ("AUDIO_SEEK_POINT_INDEX", "_aspi"),
     }
 
-    def __init__(self, body, id, size, save_image: bool = False):
-        self.encoding = body[0]
+    def __init__(self, body, id, size, unsync=False, save_image: bool = False):
+        # Account for unsynchronisation
+        self.unsync = unsync
+        if self.unsync:
+            body = self._rm_unsync(body)
+
         self.body = body[1:]
+        self.encoding = body[0]
         self.id = id
         self.size = size
         self.save_image = save_image
@@ -427,6 +438,9 @@ class Frames:
                 frmethod = getattr(self, m)
                 return frmethod()
         return None
+
+    def _rm_unsync(self, body):
+        return body.replace(b"\xFF\x00", b"\xFF")
 
     def _encode(self):
         if self.encoding == 0:
@@ -714,7 +728,7 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "TCON",
-            "Information": self.body.decode(encoding, "ignore"),
+            "Information": GENRES[int(self.body.decode(encoding, "ignore"))],
             "Contains": "Content Type (Genre)",
             "Part of": self.MAP["TCON"][0],
             "Frame Size": self.size,
@@ -953,6 +967,128 @@ class Frames:
             "Frame Size": self.size,
         }
 
+    def _txxx(self):
+        encoding = self._encode()
+        description, null_sep, value = self.body.partition(b"\x00")
+        description = description.decode(encoding, "ignore").strip()
+        value = value.decode(encoding, "ignore").strip()
+        return {
+            "ID": "TXXX",
+            "Description": description,
+            "Value": value,
+            "Contains": "Audio File Text Information",
+            "Part of": self.MAP["TXXT"][0],
+            "Frame Size": self.size,
+        }
+
+    def _wcom(self):
+        encoding = self._encode()
+        return {
+            "ID": "WCOM",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Commerical Information",
+            "Part of": self.MAP["WCOM"][0],
+            "Frame Size": self.size,
+        }
+
+    def _wcop(self):
+        encoding = self._encode()
+        return {
+            "ID": "WCOP",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Copyright/Legal Information",
+            "Part of": self.MAP["WCOP"][0],
+            "Frame Size": self.size,
+        }
+
+    def _woaf(self):
+        encoding = self._encode()
+        return {
+            "ID": "WOAF",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Official Audio File Webpage",
+            "Part of": self.MAP["WOAF"][0],
+            "Frame Size": self.size,
+        }
+
+    def _woar(self):
+        encoding = self._encode()
+        return {
+            "ID": "WOAR",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Official Artist/Performer Webpage",
+            "Part of": self.MAP["WOAR"][0],
+            "Frame Size": self.size,
+        }
+
+    def _woas(self):
+        encoding = self._encode()
+        return {
+            "ID": "WOAS",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Official Audio Source Webpage",
+            "Part of": self.MAP["WOAS"][0],
+            "Frame Size": self.size,
+        }
+
+    def _wors(self):
+        encoding = self._encode()
+        return {
+            "ID": "WORS",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Official Internet Radio Station Homepage",
+            "Part of": self.MAP["WORS"][0],
+            "Frame Size": self.size,
+        }
+
+    def _wpay(self):
+        encoding = self._encode()
+        return {
+            "ID": "WPAY",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Payment",
+            "Part of": self.MAP["WPAY"][0],
+            "Frame Size": self.size,
+        }
+
+    def _wpub(self):
+        encoding = self._encode()
+        return {
+            "ID": "WPUB",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Publishers Official Webpage",
+            "Part of": self.MAP["WPUB"][0],
+            "Frame Size": self.size,
+        }
+
+    def _wxxx(self):
+        # comm: url is always ISO-8859-1 encoded
+        # description follows encoding
+        encoding = self._encode()
+        description, null_sep, url = self.body.partition(b"\x00")
+        description = description.decode(encoding, "ignore").strip()
+        url = url.decode("ISO-8859-1", "ignore").strip()
+        return {
+            "ID": "WXXX",
+            "Description": description,
+            "URL": url,
+            "Contains": "Audio File URL Links",
+            "Part of": self.MAP["WXXX"][0],
+            "Frame Size": self.size,
+        }
+
+    def _mcdi(self):
+        # will most likely be untested
+        # assuming basic decoding
+        encoding = self._encode()
+        return {
+            "ID": "MCDI",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "CD Identifier",
+            "Part of": self.MAP["MCDI"][0],
+            "Frame Size": self.size,
+        }
+
     def _apic(self):
         encoding = self._encode()
 
@@ -993,7 +1129,7 @@ class Frames:
 
 if __name__ == "__main__":
     audio1 = Path("kotov.mp3")
-    audio2 = Path("imagematerial.mp3")
+    audio2 = Path("id3v23_unsynch.mp3")
     # info = Info(audio)
     # print(info)
     with Tag(Path(audio1)) as tag:
