@@ -448,24 +448,31 @@ class Frames:
             return "utf-8"
 
     def _comm(self):
+        # come back to this later
+        # text and desc seem to work on some and not others
         encoding = self._encode()
+
         try:
-            language = self.body[:3].decode(encoding)
-        except:
-            try:
-                language = self.body[:3].decode("utf-8")
-            except:
-                language = None
+            language = self.body[:3].decode("ISO-8859-1")
+        except Exception as e:
+            language = None
+            print(f"Error decoding language: {e}")
 
         description, null_sep, text = self.body[3:].partition(b"\x00")
 
         try:
             description = description.decode(encoding)
-        except:
+        except Exception as e:
             description = None
+            print(f"Error decoding description: {e}")
 
-        ftext = text.strip().decode(encoding, "ignore")
-        ftext = "".join([char if 32 <= ord(char) <= 126 else " " for char in ftext])
+        try:
+            ftext = text.strip(b"\x00").decode(encoding, "ignore")
+            ftext = "".join([char if 32 <= ord(char) <= 126 else " " for char in ftext])
+        except Exception as e:
+            ftext = None
+            print(f"Error decoding text: {e}")
+
         return {
             "ID": "COMM",
             "Language": language,
@@ -721,9 +728,15 @@ class Frames:
 
     def _tcon(self):
         encoding = self._encode()
+
+        try:
+            genre = GENRES[int(self.body.decode(encoding, "ignore"))]
+        except:
+            genre = self.body.decode(encoding, "ignore")
+
         return {
             "ID": "TCON",
-            "Information": GENRES[int(self.body.decode(encoding, "ignore"))],
+            "Information": genre,
             "Contains": "Content Type (Genre)",
             "Part of": self.MAP["TCON"][0],
             "Frame Size": self.size,
@@ -1124,13 +1137,13 @@ class Frames:
 
 if __name__ == "__main__":
     audio1 = Path("kotov.mp3")
-    audio2 = Path("id3v23_unsynch.mp3")
+    audio2 = Path("vbri.mp3")
     # info = Info(audio)
     # print(info)
     with Tag(Path(audio1)) as tag:
-        print("\n", tag._content_v2())
+        print(f"\n{tag._content_v2()}")
 
     with Tag(Path(audio2)) as tag:
-        print("\n", tag._content_v2())
+        print(f"\n{tag._content_v2()}")
 
     # print(info.to_dict())
