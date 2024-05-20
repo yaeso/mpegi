@@ -368,6 +368,7 @@ class Frames:
         "TDEN": ("OTHER_TEXT_FRAMES", "_tden"),
         "TDOR": ("OTHER_TEXT_FRAMES", "_tdor"),
         "TDRC": ("OTHER_TEXT_FRAMES", "_tdrc"),
+        "TYER": ("OTHER_TEXT_FRAMES", "_tyer"),
         "TDRL": ("OTHER_TEXT_FRAMES", "_tdrl"),
         "TDTG": ("OTHER_TEXT_FRAMES", "_tdtg"),
         "TSSE": ("OTHER_TEXT_FRAMES", "_tsse"),
@@ -428,7 +429,6 @@ class Frames:
         return None
 
     def _encode(self):
-
         if self.encoding == 0:
             return "ISO-8859-1"
         elif self.encoding == 1:
@@ -568,7 +568,390 @@ class Frames:
         }
 
     def _tpe2(self):
-        return
+        encoding = self._encode()
+        return {
+            "ID": "TPE2",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Band/Orchestra/Accompaniment",
+            "Part of": self.MAP["TPE2"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tpe3(self):
+        encoding = self._encode()
+        return {
+            "ID": "TPE3",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Conductor",
+            "Part of": self.MAP["TPE3"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tpe4(self):
+        encoding = self._encode()
+        return {
+            "ID": "TPE4",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Interpreted/Remixed/Modified by",
+            "Part of": self.MAP["TPE4"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tope(self):
+        encoding = self._encode()
+        return {
+            "ID": "TOPE",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Original Artist/Performer",
+            "Part of": self.MAP["TOPE"][0],
+            "Frame Size": self.size,
+        }
+
+    def _text(self):
+        encoding = self._encode()
+        return {
+            "ID": "TEXT",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Lyricist",
+            "Part of": self.MAP["TEXT"][0],
+            "Frame Size": self.size,
+        }
+
+    def _toly(self):
+        encoding = self._encode()
+        return {
+            "ID": "TOLY",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Original Lyricist",
+            "Part of": self.MAP["TOLY"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tcom(self):
+        encoding = self._encode()
+        return {
+            "ID": "TCOM",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Composer",
+            "Part of": self.MAP["TCOM"][0],
+            "Frame Size": self.size,
+        }
+
+    # tmcl and tipl output as Role1:Person1;Role2:Person2;..
+    # so basic decoding *should* work
+    # verify once a test mp3 is found, then return it as a dict
+    def _tmcl(self):
+        encoding = self._encode()
+        return {
+            "ID": "TMCL",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Musician Credits",
+            "Part of": self.MAP["TMCL"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tipl(self):
+        encoding = self._encode()
+        return {
+            "ID": "TIPL",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Involved People List",
+            "Part of": self.MAP["TIPL"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tenc(self):
+        encoding = self._encode()
+        return {
+            "ID": "TENC",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Encoded by",
+            "Part of": self.MAP["TENC"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tbpm(self):
+        encoding = self._encode()
+        return {
+            "ID": "TBPM",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "BPM",
+            "Part of": self.MAP["TBPM"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tlen(self):
+        encoding = self._encode()
+        return {
+            "ID": "TLEN",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Length of Audio File in Milliseconds",
+            "Part of": self.MAP["TLEN"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tkey(self):
+        encoding = self._encode()
+        return {
+            "ID": "TKEY",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Initial Key",
+            "Part of": self.MAP["TKEY"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tlan(self):
+        encoding = self._encode()
+        return {
+            "ID": "TLAN",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Language",
+            "Part of": self.MAP["TLAN"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tcon(self):
+        encoding = self._encode()
+        return {
+            "ID": "TCON",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Content Type (Genre)",
+            "Part of": self.MAP["TCON"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tflt(self):
+        encoding = self._encode()
+
+        file_type = self.body.decode(encoding, "ignore").strip()
+
+        types = {
+            "MIME": "MIME type follows",
+            "MPG": "MPEG Audio",
+            "/1": "MPEG 1/2 layer I",
+            "/2": "MPEG 1/2 layer II",
+            "/3": "MPEG 1/2 layer III",
+            "/2.5": "MPEG 2.5",
+            "/AAC": "Advanced audio compression",
+            "VQF": "Transform-domain Weighted Interleave Vector Quantisation",
+            "PCM": "Pulse Code Modulated audio",
+        }
+
+        description = types.get(file_type, "Unknown audio type")
+
+        return {
+            "ID": "TFLT",
+            "File Type": file_type,
+            "Description": description,
+            "Contains": "File Type",
+            "Part of": self.MAP["TFLT"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tmed(self):
+        encoding = self._encode()
+        media_type = self.body.decode(encoding, "ignore").strip()
+
+        # Not gonna manually parse them
+        # https://mutagen-specs.readthedocs.io/en/latest/id3/id3v2.4.0-frames.html#tmed
+        return {
+            "ID": "TMED",
+            "Information": media_type,
+            "Contains": "Media Type",
+            "Part of": self.MAP["TMED"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tmoo(self):
+        encoding = self._encode()
+        return {
+            "ID": "TMOO",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Mood",
+            "Part of": self.MAP["TMOO"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tcop(self):
+        encoding = self._encode()
+        return {
+            "ID": "TCOP",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Copyright Message",
+            "Part of": self.MAP["TCOP"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tpro(self):
+        encoding = self._encode()
+        return {
+            "ID": "TPRO",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Produced Notice",
+            "Part of": self.MAP["TPRO"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tpub(self):
+        encoding = self._encode()
+        return {
+            "ID": "TPUB",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Publisher",
+            "Part of": self.MAP["TPUB"][0],
+            "Frame Size": self.size,
+        }
+
+    def _town(self):
+        encoding = self._encode()
+        return {
+            "ID": "TOWN",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "File owner/Licensee",
+            "Part of": self.MAP["TOWN"][0],
+            "Frame Size": self.size,
+        }
+
+    def _trsn(self):
+        encoding = self._encode()
+        return {
+            "ID": "TRSN",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Internet Radio Station Name",
+            "Part of": self.MAP["TRSN"][0],
+            "Frame Size": self.size,
+        }
+
+    def _trso(self):
+        encoding = self._encode()
+        return {
+            "ID": "TRSO",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Internet Radio Station Owner",
+            "Part of": self.MAP["TRSO"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tfon(self):
+        encoding = self._encode()
+        return {
+            "ID": "TFON",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Original Filename",
+            "Part of": self.MAP["TFON"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tdly(self):
+        encoding = self._encode()
+        return {
+            "ID": "TDLY",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Playlist Delay in Milliseconds",
+            "Part of": self.MAP["TDLY"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tden(self):
+        encoding = self._encode()
+        return {
+            "ID": "TDEN",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Encoding Time",
+            "Part of": self.MAP["TDEN"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tdor(self):
+        encoding = self._encode()
+        return {
+            "ID": "TDOR",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Original Release Time",
+            "Part of": self.MAP["TDOR"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tdrc(self):
+        encoding = self._encode()
+        return {
+            "ID": "TDRC",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Recording Time",
+            "Part of": self.MAP["TDRC"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tyer(self):
+        # same as tdrc but for 2.3
+        encoding = self._encode()
+        return {
+            "ID": "TYER",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Recording Time",
+            "Part of": self.MAP["TYER"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tdrl(self):
+        encoding = self._encode()
+        return {
+            "ID": "TDRL",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Release Time",
+            "Part of": self.MAP["TDRL"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tdtg(self):
+        encoding = self._encode()
+        return {
+            "ID": "TDTG",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Tagging Time",
+            "Part of": self.MAP["TDTG"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tsse(self):
+        encoding = self._encode()
+        return {
+            "ID": "TSSE",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Software/Hardware & Settings Used for Encoding",
+            "Part of": self.MAP["TSSE"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tsoa(self):
+        encoding = self._encode()
+        return {
+            "ID": "TSOA",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Album Sort Order",
+            "Part of": self.MAP["TSOA"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tsop(self):
+        encoding = self._encode()
+        return {
+            "ID": "TSOP",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Performer Sort Order",
+            "Part of": self.MAP["TSOP"][0],
+            "Frame Size": self.size,
+        }
+
+    def _tsot(self):
+        encoding = self._encode()
+        return {
+            "ID": "TSOT",
+            "Information": self.body.decode(encoding, "ignore"),
+            "Contains": "Title Sort Order",
+            "Part of": self.MAP["TSOT"][0],
+            "Frame Size": self.size,
+        }
 
     def _apic(self):
         encoding = self._encode()
