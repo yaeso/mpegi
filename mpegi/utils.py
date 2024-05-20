@@ -25,5 +25,5 @@ def check_signature(audio: Path) -> bool:
     return any(signature in s for s in VALID_ISO)
 
 
-def rm_unsync(body):
+def rm_unsync(body: bytes) -> bytes:
     return body.replace(b"\xFF\x00", b"\xFF")

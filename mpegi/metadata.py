@@ -272,7 +272,7 @@ class Tag:
         )
         tag_body = self.stream.read(size)
 
-        if bool(unsynchronisation):
+        if unsynchronisation:
             tag_body = rm_unsync(tag_body)
 
         frames = {}
