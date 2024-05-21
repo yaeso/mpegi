@@ -1,0 +1,5 @@
+== MPEGI - a work in progress==
+
+MPEGI is a tool designed to extract comprehensive data from MP3 files. It can verify an MP3's integrity, retrieve its properties (MIME type, size...), and extract underlying metadata (version, bitrate, sample rate...). Additionally, MPEGI supports both ID3v1 and ID3v2 tags.
+
+MPEGI also performs audio analysis, including tasks such as estimating the duration, tempo, and BPM of the audio.
