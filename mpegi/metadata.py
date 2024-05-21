@@ -326,14 +326,6 @@ class Frames:
     0-3      Frame identifier
     4-7      Size
     8-9      Flags
-
-    If the frame has a valid id, a Tuple will be returned in the following format:
-
-        (ID, Information, Description, Frame Type, Frame Size)
-
-    For example, if ID == TIT2:
-
-        ("TIT2", "Kotov Syndrome", "TIT2", "TEXT_INFORMATION_FRAME", 200091)
     """
 
     MAP = {
@@ -545,7 +537,7 @@ class Frames:
             "Frame Size": self.size,
         }
 
-    def _TPOS(self):
+    def _tpos(self):
         encoding = self._encode()
         return {
             "ID": "TPOS",
@@ -1093,15 +1085,119 @@ class Frames:
         encoding = self._encode()
         return {
             "ID": "MCDI",
-            "Information": self.body.decode(encoding, "ignore").replace("\x00", ""),
+            "CD TOC": self.body.decode(encoding, "ignore").replace("\x00", ""),
             "Contains": "CD Identifier",
             "Part of": self.MAP["MCDI"][0],
             "Frame Size": self.size,
         }
 
     def _etoc(self):
-        # not gonna attempt until an mp3 with it is found
-        return
+        return "Not Implemented"
+
+    def _mllt(self):
+        return "Not Implemented"
+
+    def _sytc(self):
+        timestamp_format = self.body[0]
+        tempo_codes = self.body[1]
+
+        timestamp_desc = {
+            1: "Absolute time, 32 bit sized, using MPEG frames as unit",
+            2: "Absolute time, 32 bit sized, using milliseconds as unit",
+        }.get(timestamp_format, "Unknown format")
+
+        # RANGE = 2 - 510BPM
+        # timestamp format $01 MPEG frames
+        # timestamp format $02 milliseconds
+
+        RESERVED = {
+            0: "Beat-free time period",
+            1: "Single beat-stroke followed by a beat-free period",
+        }
+
+        return "Not Implemented"
+
+    def _uslt(self):
+        encoding = self._encode()
+
+        try:
+            language = self.body[:3].decode("ISO-8859-1").replace("\x00", "")
+        except Exception as e:
+            language = None
+            print(f"Error decoding language: {e}")
+
+        description, null_sep, lyrics = self.body[3:].partition(b"\x00")
+
+        try:
+            description = description.decode(encoding)
+        except Exception as e:
+            description = None
+            print(f"Error decoding description: {e}")
+
+        try:
+            lyrics = lyrics.strip(b"\x00").decode(encoding, "ignore")
+            lyrics = "".join(
+                [char if 32 <= ord(char) <= 126 else char for char in lyrics]
+            )
+        except Exception as e:
+            lyrics = None
+            print(f"Error decoding lyrics: {e}")
+
+        return {
+            "ID": "USLT",
+            "Language": language,
+            "Description": description,
+            "Lyrics": lyrics,
+            "Contains": "Unsynchronised lyrics/text transcription",
+            "Part of": self.MAP["USLT"][0],
+            "Frame Size": self.size,
+        }
+
+    def _sylt(self):
+        encoding = self._encode()
+
+        try:
+            language = self.body[:3].decode("ISO-8859-1").replace("\x00", "")
+        except Exception as e:
+            language = None
+            print(f"Error decoding language: {e}")
+
+        timestamp_byte = self.body[3]
+        timestamp_format = {
+            1: "Absolute time, 32 bit sized, using MPEG frames as unit",
+            2: "Absolute time, 32 bit sized, using milliseconds as unit",
+        }.get(timestamp_byte, "Unknown format")
+
+        content_type_byte = self.body[4]
+        content_type = {
+            0: "Other",
+            1: "Lyrics",
+            2: "Text transcription",
+            3: "Movement/part name",
+            4: "Events",
+            5: "Chord",
+            6: "Trivia",
+            7: "URLs to webpages",
+            8: "URLs to images",
+        }.get(content_type_byte, "Unknown content type")
+
+        try:
+            description_end = self.body[5:].find(b"\x00")
+            if description_end == -1:
+                description = self.body[5:].decode(encoding, "ignore").strip()
+            else:
+                description = (
+                    self.body[5 : 5 + description_end]
+                    .decode(encoding, "ignore")
+                    .strip()
+                )
+        except Exception as e:
+            description = None
+            print(f"Error decoding description: {e}")
+
+        # all methods that return "Not Implemented"
+        # will be implemented after manual tests are created
+        return "Not Implemented"
 
     def _apic(self):
         encoding = self._encode()
@@ -1142,14 +1238,10 @@ class Frames:
 
 
 if __name__ == "__main__":
-    audio1 = Path("kotov.mp3")
+    audio1 = Path("blaming_lyrics.mp3")
     audio2 = Path("vbri.mp3")
     # info = Info(audio)
     # print(info)
     with Tag(Path(audio1)) as tag:
         print(f"\n{tag._content_v2()}")
-
-    with Tag(Path(audio2)) as tag:
-        print(f"\n{tag._content_v2()}")
-
     # print(info.to_dict())
