@@ -3,9 +3,9 @@ import mimetypes
 from pathlib import Path
 from typing import BinaryIO
 
-from .genres import GENRES
-from .ptypes import PICTURE_TYPE
-from .utils import rm_unsync
+from mpegi.genres import GENRES
+from mpegi.ptypes import PICTURE_TYPE
+from mpegi.utils import rm_unsync
 
 
 class Info:
@@ -160,7 +160,7 @@ class Tag:
             self.stream.seek(-128, 2)
             return self.stream.read(128)
 
-    def _content_v1(self):
+    def content_v1(self):
         try:
             header = self._v1()
             if header is None:
@@ -204,7 +204,7 @@ class Tag:
             self.stream.seek(-3, 1)
             return self.stream.read(10)
 
-    def _content_v2(self):
+    def content_v2(self):
         try:
             stream = self._v2()
             if stream is None:
@@ -1238,10 +1238,10 @@ class Frames:
 
 
 if __name__ == "__main__":
-    audio1 = Path("blaming_lyrics.mp3")
+    audio1 = Path("imagematerial.mp3")
     audio2 = Path("vbri.mp3")
     # info = Info(audio)
     # print(info)
     with Tag(Path(audio1)) as tag:
-        print(f"\n{tag._content_v2()}")
+        print(f"\n{tag.content_v1()}")
     # print(info.to_dict())
