@@ -1,4 +1,5 @@
 mpegi/__pycache__
+tests/__pycache__
 ;
 id3v22_test.mp3
 id3v23_unsynch.mp3
@@ -10,3 +11,4 @@ coldplay.mp3
 native_construct.mp3
 pup.mp3
 blaming_lyrics.mp3
+

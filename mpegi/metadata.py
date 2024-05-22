@@ -3,9 +3,9 @@ import mimetypes
 from pathlib import Path
 from typing import BinaryIO
 
-from genres import GENRES
-from ptypes import PICTURE_TYPE
-from utils import rm_unsync
+from .genres import GENRES
+from .ptypes import PICTURE_TYPE
+from .utils import rm_unsync
 
 
 class Info:
@@ -61,7 +61,7 @@ class Info:
             f"MIME Type: {info_dict['mime_type']}\n"
             f"File Extension: {info_dict['file_extension']}\n"
             f"File Size: {info_dict['file_size']} bytes\n"
-            f"File Size (MB): {info_dict['file_size_in_mb']} MB\n"
+            f"File Size (mb): {info_dict['file_size_in_mb']} mb\n"
             f"RFC: {info_dict['rfc']}\n"
         )
 
