@@ -7,6 +7,30 @@ from mpegi.genres import GENRES
 from mpegi.ptypes import PICTURE_TYPE
 from mpegi.utils import rm_unsync
 
+# 00 refers to each byte, i suppose?
+# xx xx
+
+MP3_CHANNELS = {
+    # 00: "Stereo",
+    # 10: "Joint Stereo",
+    # 10: "Dual",
+    # 11: "Mono (single channel)",
+}
+
+JOINT_STEREO_MODE_EXTENSIONS = {
+    # 00: "Intensity Stereo [OFF] -- MS Stereo [Off]",
+    # 01: "Intensity Stereo [ON] -- MS Stereo [Off]",
+    # 10: "Intensity Stereo [OFF] -- MS Stereo [ON]",
+    # 11: "Intensity Stereo [ON] -- MS Stereo [ON]",
+}
+
+SAMPLING_RATE_FREQUENCY = {
+    # 00: 44100,  # Hz 44.1kHz
+    # 01: 48000,  # Hz 48kHz
+    # 10: 32000,  # Hz 32kHz
+    # 11: "RESERVED",
+}
+
 
 class Info:
     """
@@ -430,6 +454,7 @@ class Frames:
         return None
 
     def _encode(self):
+
         if self.encoding == 0:
             return "ISO-8859-1"
         elif self.encoding == 1:
@@ -1238,10 +1263,10 @@ class Frames:
 
 
 if __name__ == "__main__":
-    audio1 = Path("imagematerial.mp3")
+    audio1 = Path("kotov.mp3")
     audio2 = Path("vbri.mp3")
-    # info = Info(audio)
-    # print(info)
-    with Tag(Path(audio1)) as tag:
-        print(f"\n{tag.content_v1()}")
+    info = Info(audio1)
+    print(info)
+    # with Tag(Path(audio1)) as tag:
+    # print(f"\n{tag.content_v2()}")
     # print(info.to_dict())
