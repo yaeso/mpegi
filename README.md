@@ -22,12 +22,22 @@ File Size (mb): 7.24 mb
 RFC: 3003
 ```
 
+## Standard
+
+Not Implemented.
+
+Verifies if an MP3 file is valid and complies with ISO/IEC 11172-3:1993 guidelines. Outputs True if valid, else raises an error for specific failures.
+```py
+audio = Path('kotov.mp3')
+standard = Standard(audio)
+print(standard)
+```
+
 ## Metadata
 
 Not Implemented.
 
 Extracts the metadata of an MP3. This includes the Sync, MPEG Version ID, Layer, CRC (Error) Protection, Bit Rate, Sample Rate (Frequency), Padding, Channel (Mode), Mode Extension (if Joint Stereo), Copyright, Original, Emphasis, and Frame Length.
-
 ```py
 audio = Path('kotov.mp3')
 metadata = Metadata(audio)
