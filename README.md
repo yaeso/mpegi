@@ -1,9 +1,8 @@
-== MPEGI - a work in progress==
+# MPEGI - a work in progress==
 
 MPEGI is a tool designed to extract comprehensive data from MP3 files. It can verify an MP3's integrity, retrieve its properties, and extract underlying metadata. Additionally, MPEGI supports both ID3v1 and ID3v2 tags. It also checks if the MP3 complies with the ISO/IEC 11172-3:1993 guidelines.
 
 MPEGI also performs audio analysis, including tasks such as estimating the duration, and BPM of the given audio file.
-
 
 # Info
 
@@ -133,7 +132,7 @@ Frame Header Information
 
 Beat Detection
   [https://archive.gamedev.net/archive/reference/programming/features/beatdetection/](gamedev)
-  G. Tzanetakis, G. Essl and P. Cook, [https://soundlab.cs.princeton.edu/publications/2001_amta_aadwt.pdf](Audio Analysis using the Discrete Wavelet Transform)
+  G. Tzanetakis, G. Essl and P. Cook, [https://soundlab.cs.princeton.edu/publications/2001_amta_aadwt.pdf]
 
 
 
