@@ -4,7 +4,7 @@ MPEGI is a tool designed to extract comprehensive data from MP3 files. It can ve
 
 MPEGI also performs audio analysis, including tasks such as estimating the duration, and BPM of the given audio file.
 
-# Info
+## Info
 
 Extract the properties of an MP3 with the `Info` class. If used within a file, enter the MP3 as a `Path`.
 
@@ -22,7 +22,7 @@ File Size (mb): 7.24 mb
 RFC: 3003
 ```
 
-# Metadata
+## Metadata
 
 Not Implemented.
 
@@ -34,42 +34,39 @@ metadata = Metadata(audio)
 print(metadata)
 ```
 
-# Tags
+## Tags
 
-Extracts contents from both Tagv1 and Tagv2 data spaces. If either tag space does not exist, a `MP3 does not contain a TAGv<version> space.` exception is raised.
+Extracts contents from both TAGV1 and TAGV2 data spaces. If either tag space does not exist, an `MP3 does not contain a TAGv<version> space.` exception is raised.
 
-## TAGV1
+### TAGV1
 
 TAGV1 has a very simple structure. It always takes up 128 bytes at the very end of the file.
-
-```
-
-Bytes	  	Length	  	Content
-0-2		    3		        Tag identifier. Must contain "TAG" string if Tag is valid.
-3-32		  30		      Song Name
-33-62		  30		      Artist
-63-92		  30		      Album
-93-96		  4		        Year
-97-126		30		      Comment
-127		    1		        Genre
+```md
+Bytes	  	Length	  	Content 
+0-2       3           Tag identifier. Must contain "TAG" string if Tag is valid.
+3-32      30          Song Name
+33-62     30          Artist
+63-92		  30          Album
+93-96     4           Year
+97-126    30          Comment
+127       1           Genre
 ```
 
 Although the 126th byte can sometimes be used to store the track number, I have decided to ignore it.
 
 Genre is stored as an integer that maps to a specific genre. Check `genres.py` or see: https://en.wikipedia.org/wiki/List_of_ID3v1_genres
 
-## TAGV2 
+### TAGV2 
 
 TAGV2 has a much more complicated structure. This tag appears at the very start of the audio file. It contains a main header followed by frames storing information. 
 
 The header is 10 bytes and contains the following structure:
 ```
-
 Bytes	  	Content
-0-2		    TAG identifier. It contains of string "ID3"
-3-4		    TAG version. Can be eg. 03 00
-5		      Flags
-6-9		    Size of TAG
+0-2       TAG identifier. It contains of string "ID3"
+3-4       TAG version. Can be eg. 03 00
+5         Flags
+6-9       Size of TAG
 ```
 
 Flags is a single byte where the first 4 bits corresponds to Unsynchronization, Extended Header, Experimental Indicator, and Footer Present.
@@ -91,21 +88,21 @@ After going through all of this, the frames that follow are parsed for their inf
 }
 ```
 
-# Analysis
+## Analysis
 
 Not implemented.
 
-# Restrictions
+## Restrictions
 
 A few of the ID3 tags are not implemented as of yet. The tags not implemented will return `Not Implemented`. These include USLT, SYTC, MLLT, ETOC, RVA2, EQU2, RVRB, PCNT, POPM, RBUF, AENC, LINK, POSS, USER, OWNE, COMR, ENCR, GRID, PRIV, SIGN, SEEK, ASPI, and the 2.2 tags. 
 
 See: https://exiftool.org/TagNames/ID3.html
 
-# Todo
+## Todo
 Refactor the `Frames` class.
 Implement various BPM detection algorithms.
 
-# References
+## References
 
 ID3v2.3.0 
   Martin Nilsson, [https://id3.org/id3v2.3.0](id3)
