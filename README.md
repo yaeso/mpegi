@@ -1,4 +1,4 @@
-# MPEGI - a work in progress==
+# MPEGI
 
 MPEGI is a tool designed to extract comprehensive data from MP3 files. It can verify an MP3's integrity, retrieve its properties, and extract underlying metadata. Additionally, MPEGI supports both ID3v1 and ID3v2 tags. It also checks if the MP3 complies with the ISO/IEC 11172-3:1993 guidelines.
 
@@ -41,8 +41,8 @@ Extracts contents from both TAGV1 and TAGV2 data spaces. If either tag space doe
 ### TAGV1
 
 TAGV1 has a very simple structure. It always takes up 128 bytes at the very end of the file.
-```md
-Bytes	  	Length	  	Content 
+```txt
+Bytes     Length      Content 
 0-2       3           Tag identifier. Must contain "TAG" string if Tag is valid.
 3-32      30          Song Name
 33-62     30          Artist
