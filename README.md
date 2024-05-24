@@ -46,7 +46,7 @@ Bytes     Length      Content
 0-2       3           Tag identifier. Must contain "TAG" string if Tag is valid.
 3-32      30          Song Name
 33-62     30          Artist
-63-92		  30          Album
+63-92     30          Album
 93-96     4           Year
 97-126    30          Comment
 127       1           Genre
@@ -62,7 +62,7 @@ TAGV2 has a much more complicated structure. This tag appears at the very start 
 
 The header is 10 bytes and contains the following structure:
 ```
-Bytes	  	Content
+Bytes     Content
 0-2       TAG identifier. It contains of string "ID3"
 3-4       TAG version. Can be eg. 03 00
 5         Flags
