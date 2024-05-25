@@ -41,7 +41,7 @@ class Tag:
             return get_tag(stream[1])
 
         if isinstance(stream[0], bytes):
-            return self.get_v1(stream[0]), self.get_v2(stream[1])
+            return self.get_v1(stream[0]), self.get_v2(stream[1], save_image)
 
         raise Exception("Unexpected stream format.")
 
@@ -496,7 +496,7 @@ class Frames:
 
 
 if __name__ == "__main__":
-    audio = Path("mp3/kotov.mp3")
+    audio = Path("mp3/imagematerial.mp3")
     tag = Tag(audio)
     metadata = tag.get(save_image=True)
     print(metadata)
