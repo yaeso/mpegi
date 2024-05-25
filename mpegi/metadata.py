@@ -1,11 +1,5 @@
-import mimetypes
-
 from pathlib import Path
 from typing import BinaryIO
-
-from mpegi.genres import GENRES
-from mpegi.ptypes import PICTURE_TYPE
-from mpegi.utils import rm_unsync
 
 # 00 refers to each byte, i suppose?
 # xx xx
