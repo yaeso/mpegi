@@ -20,15 +20,7 @@ class Tag:
 
     def __init__(self, audio: Path):
         self.audio = audio
-        self.stream: BinaryIO = None
-
-    def __enter__(self):
-        self.stream = self.audio.open("rb")
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.stream:
-            self.stream.close()
+        self.stream: BinaryIO = self.audio.open("rb")
 
     def get(self):
         """
@@ -501,7 +493,6 @@ class Frames:
 
 if __name__ == "__main__":
     audio = Path("kotov.mp3")
-
-    with Tag(audio) as tag:
-        metadata = tag.get()
-        print(metadata)
+    tag = Tag(audio)
+    metadata = tag.get()
+    print(metadata)
