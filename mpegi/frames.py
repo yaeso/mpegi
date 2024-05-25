@@ -12,7 +12,7 @@ class Tag:
     Usage:
         audio = Path('audio.mp3')
         tag = Tag(audio)
-        print(tag)
+        print(tag.get())
     """
 
     TAGV1 = b"TAG"
@@ -22,7 +22,7 @@ class Tag:
         self.audio = audio
         self.stream: BinaryIO = self.audio.open("rb")
 
-    def get(self):
+    def get(self, save_image: bool = False):
         """
         Determines which TAG version the given audio file is
         and runs the corresponding method.
@@ -34,6 +34,10 @@ class Tag:
 
         if isinstance(stream, tuple) and isinstance(stream[0], str):
             get_tag = getattr(self, stream[0])
+
+            if stream[0] == "get_v2":
+                return get_tag(stream[1], save_image)
+
             return get_tag(stream[1])
 
         if isinstance(stream[0], bytes):
@@ -119,7 +123,7 @@ class Tag:
 
         return metadata
 
-    def get_v2(self, stream: bytes):
+    def get_v2(self, stream: bytes, save_image: bool):
         """
         Gets data from TAGv2 space.
         """
@@ -209,7 +213,7 @@ class Tag:
                 frame_body,
                 frame_id,
                 frame_size,
-                save_image=False,
+                save_image,
             )
 
             processed_frame = frame_instance.process_frame()
@@ -481,18 +485,18 @@ class Frames:
             if picture_type != 2:
                 with open(f"{description}.jpg", "wb") as file:
                     file.write(picture_data)
-                    print(f"Image saved to {description}.jpg")
+                    print(f"Image saved to {description}.jpg\n")
 
             else:
                 with open(f"{description}.png", "wb") as file:
                     file.write(picture_data)
-                    print(f"Image saved to {description}.png")
+                    print(f"Image saved to {description}.png\n")
 
         return (self.id, (mime_type, PICTURE_TYPE[picture_type], description))
 
 
 if __name__ == "__main__":
-    audio = Path("kotov.mp3")
+    audio = Path("mp3/kotov.mp3")
     tag = Tag(audio)
-    metadata = tag.get()
+    metadata = tag.get(save_image=True)
     print(metadata)
