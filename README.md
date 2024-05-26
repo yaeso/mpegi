@@ -48,6 +48,13 @@ print(metadata)
 
 Extracts contents from both TAGV1 and TAGV2 data spaces. If either tag space does not exist, an `MP3 does not contain a TAGv<version> space.` exception is raised.
 
+Simply use:
+```py
+audio = Path("audio.mp3")
+tag = Tag(audio)
+metadata = tag.get() # You can also pass in save_image=True to get() to save any attached images (only if APIC exists)
+```
+
 ### TAGV1
 
 TAGV1 has a very simple structure. It always takes up 128 bytes at the very end of the file.
@@ -83,20 +90,38 @@ Flags is a single byte where the first 4 bits corresponds to Unsynchronization, 
 
 See 3.1: https://id3.org/id3v2.4.0-structure
 
-After going through all of this, the frames that follow are parsed for their information and returned in a dictionary.
-
+After going through all of this, the frames that follow are parsed for their information and returned in a tuple.
 ```py
-# This format will likely change
-{
-    "ID": "COMM",
-    "Language": language,
-    "Description": description,
-    "Text": ftext,
-    "Contains": "Comments",
-    "Part of": self.MAP["COMM"][0],
-    "Frame Size": self.size,
-}
+# Most tags will have a format of..
+(
+  "TIT2",
+  "Title"
+)
+
+# Some may look like..
+(
+  "TXXX",
+  (
+    "Description",
+    "Value/Text"
+  )
+)
+
+# The rest are rather unique..
+(
+  "APIC",
+  (
+    "MIME Type",
+    "Picture Type",
+    "Description"
+  )
+)
+
 ```
+
+All metadata is then stored in a dictionary and returned.
+
+Also, if a 
 
 ## Analysis
 
@@ -109,7 +134,6 @@ A few of the ID3 tags are not implemented as of yet. The tags not implemented wi
 See: https://exiftool.org/TagNames/ID3.html
 
 ## Todo
-Refactor the `Frames` class.
 Implement various BPM detection algorithms.
 
 ## References
