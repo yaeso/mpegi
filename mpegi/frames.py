@@ -108,14 +108,6 @@ class Tag:
         """
         for label, value in metadata.items():
             if isinstance(value, bytes):
-                encodings = [
-                    "utf-8",
-                    "ISO-8859-1",
-                    "utf-16",
-                    "utf-16-le",
-                    "utf-16-be",
-                ]
-
                 value = value.decode("utf-8", "ignore")
 
             if label == "Genre" and len(value) != 0:
