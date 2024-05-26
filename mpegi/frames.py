@@ -108,11 +108,26 @@ class Tag:
         """
         for label, value in metadata.items():
             if isinstance(value, bytes):
-                value = value.decode("utf-8")
+                encodings = [
+                    "utf-8",
+                    "ISO-8859-1",
+                    "utf-16",
+                    "utf-16-be",
+                    "utf-16-le",
+                ]
+
+                for encoding in encodings:
+                    try:
+                        value = value.decode(encoding)
+                    except:
+                        continue
 
             if label == "Genre":
                 idx = ord(value)
-                value = GENRES[idx]
+                try:
+                    value = GENRES[idx]
+                except:
+                    continue
             else:
                 value = value.replace("\x00", "").strip()
 
@@ -322,8 +337,9 @@ class Frames:
                     "VQF": "Transform-domain Weighted Interleave Vector Quantisation",
                     "PCM": "Pulse Code Modulated audio",
                 }
+                print("\nInformation:", information)
 
-                information = types.get(information, "Unknown audio type")
+                information = types.get(information, information)
 
             return (id, information)
 
@@ -480,6 +496,9 @@ class Frames:
         description = description.decode(encoding)
 
         picture_data = frame_body
+
+        if description == "":
+            description = "image"
 
         if self.save_image:
             if picture_type != 2:
