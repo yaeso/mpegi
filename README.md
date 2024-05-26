@@ -60,7 +60,7 @@ metadata = tag.get() # You can also pass in save_image=True to get() to save any
 TAGV1 has a very simple structure. It always takes up 128 bytes at the very end of the file.
 ```txt
 Bytes     Length      Content 
-0-2       3           Tag identifier. Must contain "TAG" string if Tag is valid.
+0-2       3           Tag identifier. Must contain a "TAG" string.
 3-32      30          Song Name
 33-62     30          Artist
 63-92     30          Album
@@ -80,8 +80,8 @@ TAGV2 has a much more complicated structure. This tag appears at the very start 
 The header is 10 bytes and contains the following structure:
 ```
 Bytes     Content
-0-2       TAG identifier. It contains of string "ID3"
-3-4       TAG version. Can be eg. 03 00
+0-2       TAG identifier. Must contain a "ID3" string.
+3-4       TAG version. E.g. 03 00 == ID3v2.3.0
 5         Flags
 6-9       Size of TAG
 ```
@@ -121,8 +121,6 @@ After going through all of this, the frames that follow are parsed for their inf
 
 All metadata is then stored in a dictionary and returned.
 
-Also, if a 
-
 ## Analysis
 
 Not implemented.
@@ -138,31 +136,43 @@ Implement various BPM detection algorithms.
 
 ## References
 
-ID3v2.3.0 
+ID3v2.3.0
+
   Martin Nilsson, [https://id3.org/id3v2.3.0](id3)
 
 ID3v2.4.0
+
   Martin Nilsson, [https://id3.org/id3v2.4.0-structure](id3)
+
 ID3v2.4.0 Frames
+
   Martin Nilsson, [https://mutagen-specs.readthedocs.io/en/latest/id3/id3v2.4.0-frames.html](mutagen)
 
 MP3 File structure
+
   [https://en.wikipedia.org/wiki/MP3#File_structure](Wikipedia)
+
   [http://www.multiweb.cz/twoinches/mp3inside.htm#FrameHeaderE](multiweb)
 
 ID3 Tag Names 
+
   [https://exiftool.org/TagNames/ID3.html](exiftool)
 
 File Signatures
+
   [https://en.wikipedia.org/wiki/List_of_file_signatures](Wikipedia)
 
 Frame Header Information 
+
   [http://mpgedit.org/mpgedit/mpeg_format/MP3Format.html](mpgedit)
+
   [http://www.mp3-tech.org/programmer/frame_header.html](mp3-tech)
 
 
 Beat Detection
+
   [https://archive.gamedev.net/archive/reference/programming/features/beatdetection/](gamedev)
+
   G. Tzanetakis, G. Essl and P. Cook, [https://soundlab.cs.princeton.edu/publications/2001_amta_aadwt.pdf]
 
 
