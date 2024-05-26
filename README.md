@@ -138,42 +138,42 @@ Implement various BPM detection algorithms.
 
 ID3v2.3.0
 
-  Martin Nilsson, [https://id3.org/id3v2.3.0](id3)
+  > Martin Nilsson, [https://id3.org/id3v2.3.0](id3)
 
 ID3v2.4.0
 
-  Martin Nilsson, [https://id3.org/id3v2.4.0-structure](id3)
+  > Martin Nilsson, [https://id3.org/id3v2.4.0-structure](id3)
 
 ID3v2.4.0 Frames
 
-  Martin Nilsson, [https://mutagen-specs.readthedocs.io/en/latest/id3/id3v2.4.0-frames.html](mutagen)
+  > Martin Nilsson, [https://mutagen-specs.readthedocs.io/en/latest/id3/id3v2.4.0-frames.html](mutagen)
 
 MP3 File structure
 
-  [https://en.wikipedia.org/wiki/MP3#File_structure](Wikipedia)
+  > [https://en.wikipedia.org/wiki/MP3#File_structure](Wikipedia)
 
-  [http://www.multiweb.cz/twoinches/mp3inside.htm#FrameHeaderE](multiweb)
+  > [http://www.multiweb.cz/twoinches/mp3inside.htm#FrameHeaderE](multiweb)
 
 ID3 Tag Names 
 
-  [https://exiftool.org/TagNames/ID3.html](exiftool)
+  > [https://exiftool.org/TagNames/ID3.html](exiftool)
 
 File Signatures
 
-  [https://en.wikipedia.org/wiki/List_of_file_signatures](Wikipedia)
+  > [https://en.wikipedia.org/wiki/List_of_file_signatures](Wikipedia)
 
 Frame Header Information 
 
-  [http://mpgedit.org/mpgedit/mpeg_format/MP3Format.html](mpgedit)
+  > [http://mpgedit.org/mpgedit/mpeg_format/MP3Format.html](mpgedit)
 
-  [http://www.mp3-tech.org/programmer/frame_header.html](mp3-tech)
+  > [http://www.mp3-tech.org/programmer/frame_header.html](mp3-tech)
 
 
 Beat Detection
 
-  [https://archive.gamedev.net/archive/reference/programming/features/beatdetection/](gamedev)
+  > [https://archive.gamedev.net/archive/reference/programming/features/beatdetection/](gamedev)
 
-  G. Tzanetakis, G. Essl and P. Cook, [https://soundlab.cs.princeton.edu/publications/2001_amta_aadwt.pdf]
+  > G. Tzanetakis, G. Essl and P. Cook, [https://soundlab.cs.princeton.edu/publications/2001_amta_aadwt.pdf]
 
 
 
