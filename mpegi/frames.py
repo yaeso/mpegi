@@ -112,22 +112,18 @@ class Tag:
                     "utf-8",
                     "ISO-8859-1",
                     "utf-16",
-                    "utf-16-be",
                     "utf-16-le",
+                    "utf-16-be",
                 ]
 
-                for encoding in encodings:
-                    try:
-                        value = value.decode(encoding)
-                    except:
-                        continue
+                value = value.decode("utf-8", "ignore")
 
-            if label == "Genre":
+            if label == "Genre" and len(value) != 0:
                 idx = ord(value)
                 try:
                     value = GENRES[idx]
                 except:
-                    continue
+                    pass
             else:
                 value = value.replace("\x00", "").strip()
 
@@ -337,9 +333,8 @@ class Frames:
                     "VQF": "Transform-domain Weighted Interleave Vector Quantisation",
                     "PCM": "Pulse Code Modulated audio",
                 }
-                print("\nInformation:", information)
 
-                information = types.get(information, information)
+                information = types.get(information, information)  # lol
 
             return (id, information)
 
@@ -515,7 +510,7 @@ class Frames:
 
 
 if __name__ == "__main__":
-    audio = Path("mp3/imagematerial.mp3")
+    audio = Path("mp3/coldplay.mp3")
     tag = Tag(audio)
     metadata = tag.get(save_image=True)
     print(metadata)
