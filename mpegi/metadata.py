@@ -72,7 +72,7 @@ class Metadata:
         if layer == "Layer II" and bitrate != "FREE" and bitrate != "BAD":
             return self._verify_bitrate(bitrate)
 
-        return BITRATE_INDEX[self.header[16:20]][verlay]
+        return bitrate
 
     def _verify_bitrate(self, bitrate):
         """
@@ -83,7 +83,24 @@ class Metadata:
 
         It will then return the original bitrate or '{bitrate} and {mode} combination is not allowed.'
         """
-        return
+        ALL = [64, 96, 112, 128, 160, 192]
+        SINGLE_CHANNEL = [32, 48, 56, 80]
+        OTHER_CHANNELS = [224, 256, 320, 384]
+
+        mode = self.get_channel()
+        if bitrate in ALL:
+            return bitrate
+
+        if bitrate in SINGLE_CHANNEL and mode != "Mono (single channel)":
+            return Exception(
+                f"Combination of {bitrate} bitrate and {mode} mode is not allowed."
+            )
+        elif bitrate in OTHER_CHANNELS and mode == "Mono (single channel)":
+            return Exception(
+                f"Combination of {bitrate} bitrate and {mode} mode is not allowed."
+            )
+
+        return bitrate
 
     def get_sample_rate(self):
         """Returns audio sample rate in Hz."""
@@ -126,14 +143,21 @@ class Metadata:
         return EMPHASIS[self.header[30:32]]
 
     # ex
-    def get_frame_length(self):
-        """Attempts to calculate frame length."""
+    def get_length(self):
+        """Attempts to calculate frame length in bytes."""
         frame_length = None
+        layer = self.get_layer()
         try:
-            frame_length = int(
-                (144 * (self.get_bitrate() * 1000) / self.get_sample_rate())
-                + int(self.get_padding())
-            )
+            if layer == "Layer I":
+                frame_length = (
+                    (12 * self.get_bitrate()) / self.get_sample_rate()
+                    + int(self.get_padding())
+                ) * 4
+            else:
+                frame_length = int(
+                    (144 * (self.get_bitrate() * 1000) / self.get_sample_rate())
+                    + int(self.get_padding())
+                )
 
         except Exception:
             return Exception("Issue with calculating frame length.")
@@ -153,5 +177,10 @@ class Metadata:
                 Copyright       {self.get_copyright()}
                 Original        {self.get_original()}
                 Emphasis        {self.get_emphasis()}
-                Frame Length    {self.get_frame_length()}
+                Frame Length    {self.get_length()}
             """
+
+
+if __name__ == "__main__":
+    metadata = Metadata(Path("mp3/kotov.mp3"))
+    print(metadata)
