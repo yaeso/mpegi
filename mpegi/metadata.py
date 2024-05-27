@@ -1,86 +1,16 @@
 from pathlib import Path
-from typing import BinaryIO
 
+from mpegi.namespace import (
+    MPEG_AUDIO,
+    LAYERS,
+    BITRATE_INDEX,
+    CHANNELS,
+    JOINT_STEREO_MODE_EXTENSIONS_L1_2,
+    JOINT_STEREO_MODE_EXTENSIONS_L3,
+    SAMPLING_RATE_FREQUENCY,
+    EMPHASIS,
+)
 from mpegi.utils import frame_header
-
-# 00 refers to each byte, i suppose?
-# xx xx
-
-MPEG_AUDIO = {
-    "00": "MPEG Version 2.5",
-    "01": "RESERVED",
-    "10": "MPEG Version 2 (ISO/IEC 13818-3)",
-    "11": "MPEG Version 1 (ISO/IEC 11172-3)",
-}
-
-LAYERS = {"00": "RESERVED", "01": "Layer III", "10": "Layer II", "11": "Layer I"}
-
-# CRC = {"0": "Protected by CRC (16bit CRC follows header)", "1": "Not Protected"}
-
-BITRATE_INDEX = {
-    "0000": {
-        "V1_L1": "FREE",
-        "V1_L2": "FREE",
-        "V1_L3": "FREE",
-        "V2_L1": "FREE",
-        "V2_L2_3": "FREE",
-    },
-    "0001": {"V1_L1": 32, "V1_L2": 32, "V1_L3": 32, "V2_L1": 32, "V2_L2_3": 8},
-    "0010": {"V1_L1": 64, "V1_L2": 48, "V1_L3": 40, "V2_L1": 48, "V2_L2_3": 16},
-    "0011": {"V1_L1": 96, "V1_L2": 56, "V1_L3": 48, "V2_L1": 56, "V2_L2_3": 24},
-    "0100": {"V1_L1": 128, "V1_L2": 64, "V1_L3": 56, "V2_L1": 64, "V2_L2_3": 32},
-    "0101": {"V1_L1": 160, "V1_L2": 80, "V1_L3": 64, "V2_L1": 80, "V2_L2_3": 40},
-    "0110": {"V1_L1": 192, "V1_L2": 96, "V1_L3": 80, "V2_L1": 96, "V2_L2_3": 48},
-    "0111": {"V1_L1": 224, "V1_L2": 112, "V1_L3": 96, "V2_L1": 112, "V2_L2_3": 56},
-    "1000": {"V1_L1": 256, "V1_L2": 128, "V1_L3": 112, "V2_L1": 128, "V2_L2_3": 64},
-    "1001": {"V1_L1": 288, "V1_L2": 160, "V1_L3": 128, "V2_L1": 144, "V2_L2_3": 80},
-    "1010": {"V1_L1": 320, "V1_L2": 192, "V1_L3": 160, "V2_L1": 160, "V2_L2_3": 96},
-    "1011": {"V1_L1": 352, "V1_L2": 224, "V1_L3": 192, "V2_L1": 176, "V2_L2_3": 112},
-    "1100": {"V1_L1": 384, "V1_L2": 256, "V1_L3": 224, "V2_L1": 192, "V2_L2_3": 128},
-    "1101": {"V1_L1": 416, "V1_L2": 320, "V1_L3": 256, "V2_L1": 224, "V2_L2_3": 144},
-    "1110": {"V1_L1": 448, "V1_L2": 384, "V1_L3": 320, "V2_L1": 256, "V2_L2_3": 160},
-    "1111": {
-        "V1_L1": "BAD",
-        "V1_L2": "BAD",
-        "V1_L3": "BAD",
-        "V2_L1": "BAD",
-        "V2_L2_3": "BAD",
-    },
-}
-
-CHANNELS = {
-    "00": "Stereo",
-    "01": "Joint Stereo",
-    "10": "Dual",
-    "11": "Mono (single channel)",
-}
-
-JOINT_STEREO_MODE_EXTENSIONS_L1_2 = {
-    "00": "Bands 4 to 31",
-    "01": "Bands 8 to 31",
-    "10": "Bands 12 to 31",
-    "11": "Bands 16 to 31",
-}
-JOINT_STEREO_MODE_EXTENSIONS_L3 = {
-    "00": "Intensity Stereo [OFF] -- MS Stereo [Off]",
-    "01": "Intensity Stereo [ON] -- MS Stereo [Off]",
-    "10": "Intensity Stereo [OFF] -- MS Stereo [ON]",
-    "11": "Intensity Stereo [ON] -- MS Stereo [ON]",
-}
-
-SAMPLING_RATE_FREQUENCY = {
-    "00": 44100,  # Hz 44.1kHz
-    "01": 48000,  # Hz 48kHz
-    "10": 32000,  # Hz 32kHz
-    "11": "RESERVED",
-}
-
-EMPHASIS = {
-    "00": None,
-    "01": "50/15 ms",
-    "10": "RESERVED",
-    "11": "CCIT J.17",
-}
 
 
 class Metadata:
@@ -195,6 +125,21 @@ class Metadata:
         """Returns emphasis."""
         return EMPHASIS[self.header[30:32]]
 
+    # ex
+    def get_frame_length(self):
+        """Attempts to calculate frame length."""
+        frame_length = None
+        try:
+            frame_length = int(
+                (144 * (self.get_bitrate() * 1000) / self.get_sample_rate())
+                + int(self.get_padding())
+            )
+
+        except Exception:
+            return Exception("Issue with calculating frame length.")
+
+        return frame_length
+
     def __str__(self):
         return f"""
                 Version         {self.get_version()}
@@ -210,18 +155,3 @@ class Metadata:
                 Emphasis        {self.get_emphasis()}
                 Frame Length    {self.get_frame_length()}
             """
-
-    # ex
-    def get_frame_length(self):
-        """Attempts to calculate frame length."""
-        frame_length = None
-        try:
-            frame_length = int(
-                (144 * (self.get_bitrate() * 1000) / self.get_sample_rate())
-                + int(self.get_padding())
-            )
-
-        except Exception:
-            return Exception("Issue with calculating frame length.")
-
-        return frame_length
