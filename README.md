@@ -35,13 +35,29 @@ print(standard)
 
 ## Metadata
 
-Not Implemented.
-
 Extracts the metadata of an MP3. This includes the Sync, MPEG Version ID, Layer, CRC (Error) Protection, Bit Rate, Sample Rate (Frequency), Padding, Channel (Mode), Mode Extension (if Joint Stereo), Copyright, Original, Emphasis, and Frame Length.
 ```py
 audio = Path('kotov.mp3')
 metadata = Metadata(audio)
 print(metadata)
+
+# or you can use `get` to access specific data
+# e.g. metadata.get_sample_rate()
+```
+```
+Example output:
+                Version         MPEG Version 1 (ISO/IEC 11172-3)
+                Layer           Layer III
+                CRC             1
+                Bitrate         192
+                Sample Rate     44100
+                Padding         0
+                Private         0
+                Channel         ('Joint Stereo', 'Intensity Stereo [OFF] -- MS Stereo [ON]')
+                Copyright       0
+                Original        1
+                Emphasis        None
+                Frame Length    626
 ```
 
 ## Tags
