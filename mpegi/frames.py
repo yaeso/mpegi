@@ -5,37 +5,6 @@ from mpegi.namespace import GENRES, PICTURE_TYPE
 from mpegi.utils import rm_unsync
 
 
-def get_frames(self, tag_body, save_image):
-    idx = 0
-    frames = {}
-    while idx < len(tag_body):
-        frame_header = tag_body[idx : idx + 10]
-        if len(frame_header) < 10:
-            break
-
-        frame_id = frame_header[:4].decode("ascii")
-
-        frame_size = int.from_bytes(frame_header[4:8], byteorder="big")
-        if frame_size == 0:
-            idx += 10
-            continue
-
-        frame_body = tag_body[idx + 10 : idx + 10 + frame_size]
-
-        if not frame_body:
-            idx += 10 + frame_size
-            continue
-
-        frame_instance = Frames(frame_body, frame_id, frame_size, save_image)
-
-        processed_frame = frame_instance.process_frame()
-        if processed_frame is not None:
-            frames[frame_id] = processed_frame[1]
-        idx += 10 + frame_size
-
-    return frames
-
-
 class Tag:
     """
     Reads TAGv1 and TAGv2 file structures and returns stored data.
