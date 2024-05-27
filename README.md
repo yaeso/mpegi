@@ -132,7 +132,12 @@ A few of the ID3 tags are not implemented as of yet. The tags not implemented wi
 See: https://exiftool.org/TagNames/ID3.html
 
 ## Todo
+
+Complete `Not Implemented` tags.
+
 Implement various BPM detection algorithms.
+
+Complete testing.
 
 ## References
 
