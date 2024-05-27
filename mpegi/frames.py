@@ -5,6 +5,37 @@ from mpegi.namespace import GENRES, PICTURE_TYPE
 from mpegi.utils import rm_unsync
 
 
+def get_frames(self, tag_body, save_image):
+    idx = 0
+    frames = {}
+    while idx < len(tag_body):
+        frame_header = tag_body[idx : idx + 10]
+        if len(frame_header) < 10:
+            break
+
+        frame_id = frame_header[:4].decode("ascii")
+
+        frame_size = int.from_bytes(frame_header[4:8], byteorder="big")
+        if frame_size == 0:
+            idx += 10
+            continue
+
+        frame_body = tag_body[idx + 10 : idx + 10 + frame_size]
+
+        if not frame_body:
+            idx += 10 + frame_size
+            continue
+
+        frame_instance = Frames(frame_body, frame_id, frame_size, save_image)
+
+        processed_frame = frame_instance.process_frame()
+        if processed_frame is not None:
+            frames[frame_id] = processed_frame[1]
+        idx += 10 + frame_size
+
+    return frames
+
+
 class Tag:
     """
     Reads TAGv1 and TAGv2 file structures and returns stored data.
@@ -191,9 +222,15 @@ class Tag:
         if unsynchronisation:
             tag_body = rm_unsync(tag_body)
 
-        frames = {}
-        idx = 0
+        frames = self.get_frames(tag_body, save_image)
 
+        metadata["Frames"] = frames
+
+        return metadata
+
+    def get_frames(self, tag_body, save_image):
+        idx = 0
+        frames = {}
         while idx < len(tag_body):
             frame_header = tag_body[idx : idx + 10]
             if len(frame_header) < 10:
@@ -212,19 +249,14 @@ class Tag:
                 idx += 10 + frame_size
                 continue
 
-            frame_instance = Frames(
-                frame_body,
-                frame_id,
-                frame_size,
-                save_image,
-            )
+            frame_instance = Frames(frame_body, frame_id, frame_size, save_image)
 
             processed_frame = frame_instance.process_frame()
             if processed_frame is not None:
-                metadata[frame_id] = processed_frame[1]
+                frames[frame_id] = processed_frame[1]
             idx += 10 + frame_size
 
-        return metadata
+        return frames
 
 
 class Frames:
@@ -234,7 +266,7 @@ class Frames:
     Each frame is used for storing one piece of information, such as Artist or Album.
     """
 
-    def __init__(self, body, id, size, save_image: bool = False):
+    def __init__(self, body, id, size, metadata, save_image: bool = False):
         self.body = body[1:]
         self.encoding = body[0]
         self.full_body = body
@@ -470,6 +502,15 @@ class Frames:
         # will be implemented after manual tests are created
         return "Not Implemented"
 
+    def _rva2(self):
+        return "Not Implemented"
+
+    def _equ2(self):
+        return "Not Implemented"
+
+    def _rvrb(self):
+        return "Not Implemented"
+
     def _apic(self):
         encoding = self._encode()
 
@@ -500,9 +541,75 @@ class Frames:
 
         return (self.id, (mime_type, PICTURE_TYPE[picture_type], description))
 
+    def _geob(self):
+        encoding = self._encode()
+        mime_type, null_sep, frame_body = self.body.partition(b"\x00")
+        mime_type = mime_type.decode("ISO-8859-1")
+
+        filename, null_sep, frame_body = frame_body.partition(b"\x00")
+        filename = filename.decode(encoding)
+
+        content_description, null_sep, frame_body = frame_body.partition(b"\x00")
+        content_description = content_description.decode(encoding, "ignore")
+
+        encapsulated_object = frame_body.decode(encoding, "ignore").replace("\x00", "")
+
+        if content_description == "":
+            content_description = "object"
+
+        return (
+            self.id,
+            (mime_type, filename, content_description, encapsulated_object),
+        )
+
+    def _pcnt(self):
+        return "Not Implemented"
+
+    def _popm(self):
+        return "Not Implemented"
+
+    def _rbuf(self):
+        return "Not Implemented"
+
+    def _aenc(self):
+        return "Not Implemented"
+
+    def _link(self):
+        return "Not Implemented"
+
+    def _poss(self):
+        return "Not Implemented"
+
+    def _user(self):
+        return "Not Implemented"
+
+    def _owne(self):
+        return "Not Implemented"
+
+    def _comr(self):
+        return "Not Implemented"
+
+    def _encr(self):
+        return "Not Implemented"
+
+    def _grid(self):
+        return "Not Implemented"
+
+    def _priv(self):
+        return "Not Implemented"
+
+    def _sign(self):
+        return "Not Implemented"
+
+    def _seek(self):
+        return "Not Implemented"
+
+    def _aspi(self):
+        return "Not Implemented"
+
 
 if __name__ == "__main__":
-    audio = Path("mp3/coldplay.mp3")
+    audio = Path("mp3/imagematerial.mp3")
     tag = Tag(audio)
     metadata = tag.get(save_image=True)
     print(metadata)
