@@ -1,5 +1,5 @@
-# MPEGi utils -- utility functions
 from pathlib import Path
+from typing import BinaryIO, Tuple
 
 
 def check_signature(audio: Path) -> bool:
@@ -44,54 +44,52 @@ def rm_unsync(body: bytes) -> bytes:
     return body.replace(b"\xFF\x00", b"\xFF")
 
 
-def frame_header(audio: Path) -> bytes:
+def frame_header(stream: BinaryIO) -> Tuple[str, str]:
     """
-    Retrieves the frame header.
+    Retrieves the frame header at the current position of the stream.
 
     Ensures valid frame sync and header size.
 
     Args:
-        audio (Path): The MP3 file.
+        stream (BinaryIO): The MP3 file stream.
 
     Returns:
-        Tuple: The frame sync bits and the frame header.
+        Tuple[str, str]: The frame sync bits and the frame header.
     """
-    with audio.open("rb") as stream:
-
-        # Account for TAGv2 space at start of file
+    # Account for TAGv2 space at start of file
+    stream.seek(0)
+    tag = stream.read(3)
+    if tag == b"ID3":
+        stream.seek(6)
+        sizeb = stream.read(4)
+        size = (
+            (sizeb[0] & 0x7F) << 21
+            | (sizeb[1] & 0x7F) << 14
+            | (sizeb[2] & 0x7F) << 7
+            | (sizeb[3] & 0x7F)
+        )
+        stream.seek(10 + size)
+    # No TAGv2 space
+    else:
         stream.seek(0)
-        tag = stream.read(3)
-        if tag == b"ID3":
-            stream.seek(6)
-            sizeb = stream.read(4)
-            size = (
-                (sizeb[0] & 0x7F) << 21
-                | (sizeb[1] & 0x7F) << 14
-                | (sizeb[2] & 0x7F) << 7
-                | (sizeb[3] & 0x7F)
-            )
-            stream.seek(10 + size)
-        # No TAGv2 space
-        else:
-            stream.seek(0)
 
-        header = stream.read(4)
-        if len(header) != 4:
-            raise Exception("Invalid Frame Header: Length is not 4 bytes.")
+    header = stream.read(4)
+    if len(header) != 4:
+        raise Exception("Invalid Frame Header: Length is not 4 bytes.")
 
-        sync12 = (header[0] << 4) | (header[1] >> 4)
-        sync11 = (header[0] << 3) | (header[1] >> 5)
+    sync12 = (header[0] << 4) | (header[1] >> 4)
+    sync11 = (header[0] << 3) | (header[1] >> 5)
 
-        if (sync11 & 0x7FF) == 0x7FF:
-            sync = format(sync11, "011b")
+    if (sync11 & 0x7FF) == 0x7FF:
+        sync = format(sync11, "011b")
 
-        elif (sync12 & 0xFFE) == 0xFFE:  # Check for 12-bit sync
-            sync = format(sync12, "012b")
-        else:
-            raise Exception("Frame Synchronizer bits are not set to 1 (11 or 12).")
+    elif (sync12 & 0xFFE) == 0xFFE:  # Check for 12-bit sync
+        sync = format(sync12, "012b")
+    else:
+        raise Exception("Frame Synchronizer bits are not set to 1 (11 or 12).")
 
-        size = "".join(format(byte, "08b") for byte in header)
-        if len(size) != 32:
-            raise Exception(f"Header Size is not 32. (size: {size})")
+    size = "".join(format(byte, "08b") for byte in header)
+    if len(size) != 32:
+        raise Exception(f"Header Size is not 32. (size: {size})")
 
-        return (sync, "".join(format(byte, "08b") for byte in header))
+    return (sync, "".join(format(byte, "08b") for byte in header))

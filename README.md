@@ -1,8 +1,8 @@
 # MPEGI
 
-MPEGI is a tool designed to extract comprehensive data from MP3 files. It can verify an MP3's integrity, retrieve its properties, and extract underlying metadata. Additionally, MPEGI supports both ID3v1 and ID3v2 tags. It also checks if the MP3 complies with the ISO/IEC 11172-3:1993 guidelines.
+MPEGI is a tool designed to extract comprehensive data from MP3 files. It can retrieve its properties, and extract underlying metadata. Additionally, MPEGI supports both ID3v1 and ID3v2 tags.
 
-MPEGI also performs audio analysis, including tasks such as estimating the duration, and BPM of the given audio file.
+MPEGI also performs BPM detection on the given audio file.
 
 ## Info
 
@@ -22,17 +22,6 @@ File Size (mb): 7.24 mb
 RFC: 3003
 ```
 
-## Standard
-
-Not Implemented.
-
-Verifies if an MP3 file is valid and complies with ISO/IEC 11172-3:1993 guidelines. Outputs True if valid, else raises an error for specific failures.
-```py
-audio = Path('kotov.mp3')
-standard = Standard(audio)
-print(standard)
-```
-
 ## Metadata
 
 Extracts the metadata of an MP3. This includes the Sync, MPEG Version ID, Layer, CRC (Error) Protection, Bit Rate, Sample Rate (Frequency), Padding, Channel (Mode), Mode Extension (if Joint Stereo), Copyright, Original, Emphasis, and Frame Length.
@@ -46,18 +35,19 @@ print(metadata)
 ```
 ```
 Example output:
-                Version         MPEG Version 1 (ISO/IEC 11172-3)
-                Layer           Layer III
-                CRC             1
-                Bitrate         192
-                Sample Rate     44100
-                Padding         0
-                Private         0
-                Channel         ('Joint Stereo', 'Intensity Stereo [OFF] -- MS Stereo [ON]')
-                Copyright       0
-                Original        1
-                Emphasis        None
-                Frame Length    626
+
+  Version         MPEG Version 1 (ISO/IEC 11172-3)
+  Layer           Layer III
+  CRC             1
+  Bitrate         192
+  Sample Rate     44100
+  Padding         0
+  Private         0
+  Channel         ('Joint Stereo', 'Intensity Stereo [OFF] -- MS Stereo [ON]')
+  Copyright       0
+  Original        1
+  Emphasis        None
+  Frame Length    626
 ```
 
 ## Tags

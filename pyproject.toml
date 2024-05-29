@@ -14,3 +14,8 @@ numpy = "^1.26.4"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+info = "mpegi.info:main"
+metadata = "mpegi.metadata:main"
+tag = "mpegi.frames:main"

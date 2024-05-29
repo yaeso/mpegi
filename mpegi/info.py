@@ -1,3 +1,4 @@
+import argparse
 import mimetypes
 
 from pathlib import Path
@@ -59,3 +60,16 @@ class Info:
             f"File Size (mb): {info_dict['file_size_in_mb']} mb\n"
             f"RFC: {info_dict['rfc']}\n"
         )
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Extract the properties of an MP3.")
+    parser.add_argument("--audio", type=Path, help="Path leading to MP3.")
+    args = parser.parse_args()
+    audio = args.audio
+    info = Info(audio)
+    print(info)
+
+
+if __name__ == "__main__":
+    main()

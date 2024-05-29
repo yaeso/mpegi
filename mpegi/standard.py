@@ -3,7 +3,8 @@ import mimetypes
 from pathlib import Path
 from typing import BinaryIO
 
-from utils import check_signature
+from mpegi.metadata import Metadata
+from mpegi.utils import check_signature
 
 # MPEGi standard -- Checks if MP3 follows ISO/IEC 11172-3:1993 guidelines.
 
@@ -25,30 +26,25 @@ class Standard:
 
     def __init__(self, audio: Path):
         self.audio = audio
-        self.stream: BinaryIO = None
-
-    def __enter__(self):
-        self.stream = self.audio.open("rb")
-        return self
+        self.stream: BinaryIO = self.audio.open("rb")
 
     def verify(self):
         """
         Verifies if the given file is an MP3.
 
         Checks the file signature and extension.
+
+        Returns:
+            Tuple - (bool if extension is MP3, bool if file signature matches MP3)
         """
         signature = check_signature(self.audio)
         mime, _ = mimetypes.guess_type(self.audio)
         if mime:
             extension = mimetypes.guess_extension(mime)
-            return extension == MP3 and signature == True
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if self.stream:
-            self.stream.close()
+            return (extension == MP3, signature)
 
 
 if __name__ == "__main__":
-    audio = Path("imagematerial.mp3")
-    with Standard(audio) as standard:
-        print(standard.verify())
+    audio = Path("test.txt")
+    standard = Standard(audio)
+    print(standard.verify())

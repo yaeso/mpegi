@@ -1,4 +1,7 @@
+import argparse
+
 from pathlib import Path
+from typing import BinaryIO
 
 from mpegi.namespace import (
     MPEG_AUDIO,
@@ -19,8 +22,10 @@ class Metadata:
     """
 
     def __init__(self, audio: Path):
-        self.sync = frame_header(audio)[0]
-        self.header = str(frame_header(audio)[1])
+        self.audio = audio
+        self.stream: BinaryIO = self.audio.open("rb")
+        self.sync = frame_header(self.stream)[0]
+        self.header = str(frame_header(self.stream)[1])
 
     def get_header(self):
         """Returns frame header."""
@@ -147,17 +152,16 @@ class Metadata:
         """Attempts to calculate frame length in bytes."""
         frame_length = None
         layer = self.get_layer()
+        bitrate = self.get_bitrate()
+        sample_rate = self.get_sample_rate()
+        padding = self.get_padding()
+
         try:
             if layer == "Layer I":
-                frame_length = (
-                    (12 * self.get_bitrate()) / self.get_sample_rate()
-                    + int(self.get_padding())
-                ) * 4
+                frame_length = ((12 * bitrate) / sample_rate + int(padding)) * 4
             else:
-                frame_length = int(
-                    (144 * (self.get_bitrate() * 1000) / self.get_sample_rate())
-                    + int(self.get_padding())
-                )
+                frame_length = (144 * bitrate * 1000 / sample_rate) + int(padding)
+            frame_length = round(frame_length)
 
         except Exception:
             return Exception("Issue with calculating frame length.")
@@ -166,21 +170,29 @@ class Metadata:
 
     def __str__(self):
         return f"""
-                Version         {self.get_version()}
-                Layer           {self.get_layer()}
-                CRC             {self.get_crc()}
-                Bitrate         {self.get_bitrate()}
-                Sample Rate     {self.get_sample_rate()}
-                Padding         {self.get_padding()}
-                Private         {self.get_private()}
-                Channel         {self.get_channel()}
-                Copyright       {self.get_copyright()}
-                Original        {self.get_original()}
-                Emphasis        {self.get_emphasis()}
-                Frame Length    {self.get_length()}
-            """
+    Version         {self.get_version()}
+    Layer           {self.get_layer()}
+    CRC             {self.get_crc()}
+    Bitrate         {self.get_bitrate()}
+    Sample Rate     {self.get_sample_rate()}
+    Padding         {self.get_padding()}
+    Private         {self.get_private()}
+    Channel         {self.get_channel()}
+    Copyright       {self.get_copyright()}
+    Original        {self.get_original()}
+    Emphasis        {self.get_emphasis()}
+    Frame Length    {self.get_length()}
+    """
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Extract the metadata of an MP3.")
+    parser.add_argument("--audio", type=Path, help="Path leading to MP3.")
+    args = parser.parse_args()
+    audio = args.audio
+    metadata = Metadata(audio)
+    print(metadata)
 
 
 if __name__ == "__main__":
-    metadata = Metadata(Path("mp3/kotov.mp3"))
-    print(metadata)
+    main()

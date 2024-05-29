@@ -1,3 +1,5 @@
+import argparse
+
 from pathlib import Path
 from typing import BinaryIO, Tuple, Union
 
@@ -218,7 +220,9 @@ class Tag:
                 idx += 10 + frame_size
                 continue
 
-            frame_instance = Frames(frame_body, frame_id, frame_size, save_image)
+            frame_instance = Frames(
+                frame_body, frame_id, frame_size, save_image=save_image
+            )
 
             processed_frame = frame_instance.process_frame()
             if processed_frame is not None:
@@ -235,7 +239,7 @@ class Frames:
     Each frame is used for storing one piece of information, such as Artist or Album.
     """
 
-    def __init__(self, body, id, size, metadata, save_image: bool = False):
+    def __init__(self, body, id, size, save_image: bool = False):
         self.body = body[1:]
         self.encoding = body[0]
         self.full_body = body
@@ -577,8 +581,24 @@ class Frames:
         return "Not Implemented"
 
 
-if __name__ == "__main__":
-    audio = Path("mp3/imagematerial.mp3")
+def main():
+    parser = argparse.ArgumentParser(
+        description="Extract content from both TAGV1 and TAGV2 data spaces."
+    )
+    parser.add_argument("--audio", type=Path, help="Path leading to MP3.")
+    parser.add_argument(
+        "--save-image",
+        action="store_const",
+        const=True,
+        help="Whether to save image if APIC exists.",
+    )
+    args = parser.parse_args()
+    audio = args.audio
+    save_image = args.save_image
     tag = Tag(audio)
-    metadata = tag.get(save_image=True)
+    metadata = tag.get(save_image=save_image)
     print(metadata)
+
+
+if __name__ == "__main__":
+    main()
