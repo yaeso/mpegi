@@ -8,11 +8,7 @@ MPEGI also performs BPM detection on the given audio file.
 
 Extract the properties of an MP3 with the `Info` class. If used within a file, enter the MP3 as a `Path`.
 
-```py
-audio = Path('kotov.mp3')
-info = Info(audio)
-print(info)
-```
+```$ poetry run info --audio /path/to/mp3```
 ```
 File Name: kotov.mp3
 MIME Type: audio/mpeg
@@ -25,14 +21,7 @@ RFC: 3003
 ## Metadata
 
 Extracts the metadata of an MP3. This includes the Sync, MPEG Version ID, Layer, CRC (Error) Protection, Bit Rate, Sample Rate (Frequency), Padding, Channel (Mode), Mode Extension (if Joint Stereo), Copyright, Original, Emphasis, and Frame Length.
-```py
-audio = Path('kotov.mp3')
-metadata = Metadata(audio)
-print(metadata)
-
-# or you can use `get` to access specific data
-# e.g. metadata.get_sample_rate()
-```
+```$ poetry run metadata --audio /path/to/mp3```
 ```
 Example output:
 
@@ -55,10 +44,12 @@ Example output:
 Extracts contents from both TAGV1 and TAGV2 data spaces. If either tag space does not exist, an `MP3 does not contain a TAGv<version> space.` exception is raised.
 
 Simply use:
-```py
-audio = Path("audio.mp3")
-tag = Tag(audio)
-metadata = tag.get() # You can also pass in save_image=True to get() to save any attached images (only if APIC exists)
+```
+$ poetry run tag --audio /path/to/mp3 
+
+If you want to save images when an APIC tag is present, pass in --save-image
+
+$ poetry run tag --audio /path/to/mp3 --save-image
 ```
 
 ### TAGV1
@@ -127,7 +118,7 @@ After going through all of this, the frames that follow are parsed for their inf
 
 All metadata is then stored in a dictionary and returned.
 
-## Analysis
+## BPM Detection
 
 Not implemented.
 
@@ -138,8 +129,6 @@ A few of the ID3 tags are not implemented as of yet. The tags not implemented wi
 See: https://exiftool.org/TagNames/ID3.html
 
 ## Todo
-
-Complete `Not Implemented` tags.
 
 Implement various BPM detection algorithms.
 
