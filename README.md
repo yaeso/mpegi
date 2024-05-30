@@ -1,13 +1,23 @@
-# MPEGI
+## mpegi
 
-MPEGI is a tool designed to extract comprehensive data from MP3 files. It can retrieve its properties, and extract underlying metadata. Additionally, MPEGI supports both ID3v1 and ID3v2 tags.
+mpegi is a tool designed to extract comprehensive data from MP3 files. It can retrieve its properties, and extract underlying metadata. Additionally, mpegi supports both ID3v1 and ID3v2 tags.
 
-MPEGI also performs BPM detection on the given audio file.
+## Getting Started
+
+This project uses Poetry.
+
+Clone the repository, setup the environment, and install the scripts.
+```
+$ git clone git@github.com:yaeso/mpegi.git 
+$ cd mpegi
+$ poetry shell
+$ poetry install
+```
+This project does not use any external libraries other than pytest.
 
 ## Info
 
 Extract the properties of an MP3 with the `Info` class. If used within a file, enter the MP3 as a `Path`.
-
 ```$ poetry run info --audio /path/to/mp3```
 ```
 File Name: kotov.mp3
@@ -21,7 +31,9 @@ RFC: 3003
 ## Metadata
 
 Extracts the metadata of an MP3. This includes the Sync, MPEG Version ID, Layer, CRC (Error) Protection, Bit Rate, Sample Rate (Frequency), Padding, Channel (Mode), Mode Extension (if Joint Stereo), Copyright, Original, Emphasis, and Frame Length.
-```$ poetry run metadata --audio /path/to/mp3```
+```
+$ poetry run metadata --audio /path/to/mp3
+```
 ```
 Example output:
 
@@ -65,7 +77,6 @@ Bytes     Length      Content
 97-126    30          Comment
 127       1           Genre
 ```
-
 Although the 126th byte can sometimes be used to store the track number, I have decided to ignore it.
 
 Genre is stored as an integer that maps to a specific genre. Check `genres.py` or see: https://en.wikipedia.org/wiki/List_of_ID3v1_genres
@@ -82,7 +93,6 @@ Bytes     Content
 5         Flags
 6-9       Size of TAG
 ```
-
 Flags is a single byte where the first 4 bits corresponds to Unsynchronization, Extended Header, Experimental Indicator, and Footer Present.
 
 See 3.1: https://id3.org/id3v2.4.0-structure
@@ -115,24 +125,13 @@ After going through all of this, the frames that follow are parsed for their inf
 )
 
 ```
-
 All metadata is then stored in a dictionary and returned.
-
-## BPM Detection
-
-Not implemented.
 
 ## Restrictions
 
 A few of the ID3 tags are not implemented as of yet. The tags not implemented will return `Not Implemented`. These include USLT, SYTC, MLLT, ETOC, RVA2, EQU2, RVRB, PCNT, POPM, RBUF, AENC, LINK, POSS, USER, OWNE, COMR, ENCR, GRID, PRIV, SIGN, SEEK, ASPI, and the 2.2 tags. 
 
 See: https://exiftool.org/TagNames/ID3.html
-
-## Todo
-
-Implement various BPM detection algorithms.
-
-Complete testing.
 
 ## References
 
