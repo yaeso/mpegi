@@ -1,12 +1,12 @@
 from pathlib import Path
 
-from mpegi import Info
+from mpegi.info import Info
 
 
 class TestInfo:
 
     def setup_class(self):
-        audio = Path("imagematerial.mp3")
+        audio = Path("./mp3/imagematerial.mp3")
         self.info = Info(audio)
         print(self.info)
 
