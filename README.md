@@ -18,7 +18,9 @@ This project does not use any external libraries other than pytest.
 ## Info
 
 Extract the properties of an MP3 with the `Info` class. If used within a file, enter the MP3 as a `Path`.
-```$ poetry run info --audio /path/to/mp3```
+```
+$ poetry run info --audio /path/to/mp3
+```
 ```
 File Name: kotov.mp3
 MIME Type: audio/mpeg
